@@ -5,7 +5,7 @@ export const siteConfig = {
   navItems: [
     {
       label: "Inicio",
-      href: "/",
+      href: "/inicio",
     },
     {
       label: "Kata",
