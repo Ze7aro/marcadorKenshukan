@@ -123,7 +123,6 @@ export default function KumitePage() {
   const audioFinalRef = useRef<HTMLAudioElement>(null);
   const [isRunning, setIsRunning] = useState(false);
   const [selectedTime, setSelectedTime] = useState(180);
-  const [competidores, setCompetidores] = useState<Competidor[]>([]);
   const [currentTime, setCurrentTime] = useState(0);
   const [resetKey, setResetKey] = useState(0);
   const items = [
@@ -318,8 +317,6 @@ export default function KumitePage() {
         const worksheet = workbook.Sheets[sheetName];
 
         const categoriaCell = worksheet["B1"];
-        const akaCell = worksheet["A3"];
-        const shiroCell = worksheet["A4"];
 
         // Extraer competidores del Excel
         const competidoresExtraidos: Competidor[] = [];
@@ -343,7 +340,6 @@ export default function KumitePage() {
 
         // Actualizar el estado con los competidores extraídos
         if (competidoresExtraidos.length > 0) {
-          setCompetidores(competidoresExtraidos);
           const bracketData = generateBracket(competidoresExtraidos);
 
           if (bracketData.length > 0 && bracketData[0].length > 0) {
