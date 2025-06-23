@@ -290,16 +290,6 @@ export default function KumitePage() {
     });
   }
 
-  const initDefaultBracket = () => {
-    setIsRunning(false);
-    setSelectedTime(180);
-    setCurrentTime(180);
-    setResetKey((prev) => prev + 1);
-    dispatch({
-      type: "INIT_DEFAULT_BRACKET",
-    });
-  };
-
   const sonarCampana = () => {
     audioRef.current?.play();
   };
