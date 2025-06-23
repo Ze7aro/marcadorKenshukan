@@ -193,14 +193,6 @@ export default function IndexPage() {
             <RiInformationLine size={24} />
           </Button>
         </div>
-
-        {/*       <div
-          className={`pointer-events-none absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 ${
-            isOpen ? "z-0" : "z-[9999]"
-          }`}
-        >
-          <Image alt="Logo" className="w-[20%] rounded-full" src={Logo} />
-        </div> */}
         <div className="w-full h-full flex items-center relative justify-center">
           <Button
             className={`${styleButton} pl-14 items-start rounded-l-full bg-gradient-to-r from-zinc-100 to-blue-600 hover:bg-gradient-to-r hover:from-zinc-200 hover:to-blue-700`}

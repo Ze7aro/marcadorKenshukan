@@ -8,7 +8,7 @@ export default function PDFViewer({ fileUrl }: { fileUrl: string }) {
       </CardHeader>
       <CardBody>
         <iframe
-          className="w-full h-[600px] border-none"
+          className="w-full h-[400px] border-none"
           src={fileUrl}
           title="Reglamento WUKF"
         />
