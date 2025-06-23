@@ -1,18 +1,32 @@
-import { Card, CardBody, CardHeader } from "@heroui/react";
+import { useRef } from "react";
+import { Button } from "@heroui/react";
 
 export default function PDFViewer({ fileUrl }: { fileUrl: string }) {
+  const containerRef = useRef<HTMLDivElement>(null);
+
+  const handleFullscreen = () => {
+    if (containerRef.current?.requestFullscreen) {
+      containerRef.current.requestFullscreen();
+    }
+  };
+
   return (
-    <Card>
-      <CardHeader className="text-lg font-semibold">
-        Vista previa del PDF
-      </CardHeader>
-      <CardBody>
+    <div>
+      <Button
+        className="bg-gray-700 text-white rounded-md mb-2"
+        size="sm"
+        onPress={handleFullscreen}
+      >
+        Ver en pantalla completa
+      </Button>
+
+      <div ref={containerRef} className="w-full h-[350px] rounded-lg">
         <iframe
-          className="w-full h-[400px] border-none"
+          className="w-full h-full border-none rounded-lg"
           src={fileUrl}
           title="Reglamento WUKF"
         />
-      </CardBody>
-    </Card>
+      </div>
+    </div>
   );
 }

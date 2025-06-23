@@ -14,6 +14,7 @@ import {
 import { RiInformationLine } from "react-icons/ri";
 
 import Logo from "@/assets/images/kenshukan-logo.png";
+import MY_LOGO from "@/assets/images/Logo-2.png";
 import Kata from "@/assets/images/kata.png";
 import Kumite from "@/assets/images/kumite.png";
 import KataKanshi from "@/assets/images/kata-kanshi.png";
@@ -127,14 +128,6 @@ export default function IndexPage() {
       ),
     },
     {
-      title: "Desarrollado por",
-      content: (
-        <div className="space-y-4">
-          <p className="text-gray-700">Mi, no hay necesidad de saber mas.</p>
-        </div>
-      ),
-    },
-    {
       title: "Excel para Kata",
       content: (
         <div className="w-full bg-gray-100 rounded-lg flex items-center justify-start text-gray-500">
@@ -176,6 +169,17 @@ export default function IndexPage() {
     {
       title: "Reglamento",
       content: <PDFReader fileUrl={Reglamento} />,
+    },
+    {
+      title: "Desarrollado por",
+      content: (
+        <div className="w-full bg-gray-400 rounded-lg flex items-center justify-center space-y-4">
+          <span className="bg-gradient-to-r from-white via-gray-300 to-blue-500 bg-clip-text text-transparent font-semibold italic">
+            Designed by
+          </span>
+          <Image alt="Logo" className="w-[50%] h-[60%]" src={MY_LOGO} />
+        </div>
+      ),
     },
   ];
 
@@ -234,7 +238,7 @@ export default function IndexPage() {
           </Button>
         </div>
 
-        <Modal isOpen={isOpen} onOpenChange={onOpenChange} size="2xl">
+        <Modal isOpen={isOpen} size="2xl" onOpenChange={onOpenChange}>
           <ModalContent>
             {(onClose) => (
               <>
@@ -249,7 +253,7 @@ export default function IndexPage() {
                   </div>
                 </ModalHeader>
                 <ModalBody>
-                  <div className="min-h-[300px]">
+                  <div className="min-h-[350px]">
                     <h3 className="text-lg font-semibold text-blue-600 mb-4">
                       {carouselContent[activePage - 1]?.title}
                     </h3>
@@ -296,7 +300,7 @@ export default function IndexPage() {
 
                         if (page === PaginationItemType.DOTS) {
                           return (
-                            <li key={page} className="w-4 h-4">
+                            <li key={page} className="w-4 h-4 ">
                               ...
                             </li>
                           );
@@ -310,7 +314,7 @@ export default function IndexPage() {
                           >
                             <button
                               className={`w-full h-full bg-default-300 rounded-full ${
-                                activePage === page && "bg-secondary"
+                                activePage === page && "bg-primary"
                               }`}
                               onClick={() => setPage(page)}
                             />
