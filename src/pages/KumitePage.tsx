@@ -13,7 +13,6 @@ import Bell from "@/assets/bell.wav";
 import Bell3 from "@/assets/bell3.wav";
 import ShiroBelt from "@/assets/images/shiroStill.gif";
 import AkaBelt from "@/assets/images/akaStill.gif";
-import DefaultLayout from "@/layouts/default";
 import { MenuComponent } from "@/components/MenuComponent";
 import { CommonInput } from "@/components/CommonInput";
 import { Competidor } from "@/types";
@@ -838,300 +837,292 @@ export default function KumitePage() {
   console.log(state);
 
   return (
-    <DefaultLayout>
-      <div className="w-full h-screen justify-between flex flex-col p-10 bg-gradient-to-b from-blue-500/30 to-blue-800/90">
-        <div className="w-full flex justify-between">
-          <div className="w-[10%] h-[10%]">
-            <Image
-              alt="Logo"
-              className="w-full h-full object-cover rounded-full"
-              src={Logo}
+    <div className="w-full h-screen justify-between flex flex-col  px-10 py-2 bg-gradient-to-b from-blue-500/30 to-blue-800/90">
+      <div className="w-full flex justify-between">
+        <div className="w-[10%] h-[10%]">
+          <Image
+            alt="Logo"
+            className="w-full h-full object-cover rounded-full"
+            src={Logo}
+          />
+        </div>
+        <div className="flex gap-16 self-center">
+          <div className="flex gap-4">
+            <h3 className="font-semibold self-center text-2xl">Categoría:</h3>
+            <CommonInput
+              isReadOnly
+              label="Categoria"
+              value={state.match.categoria}
             />
+            <input
+              accept=".xlsx,.xls"
+              className="hidden"
+              id="excel-upload"
+              type="file"
+              onChange={handleFileUpload}
+            />
+            <Button
+              className="bg-green-700 text-white self-center"
+              onPress={() => document?.getElementById("excel-upload")?.click()}
+            >
+              Cargar Excel
+            </Button>
           </div>
-          <div className="flex gap-16 self-center">
-            <div className="flex gap-4">
-              <h3 className="font-semibold self-center text-2xl">Categoría:</h3>
-              <CommonInput
+          <div className="flex items-center gap-4">
+            <h2 className="text-black dark:text-white font-semibold text-3xl">
+              Area:
+            </h2>
+            {state.match.areaSeleccionada ? (
+              <Input
                 isReadOnly
-                label="Categoria"
-                value={state.match.categoria}
+                className="rounded-md text-center font-bold"
+                value={state.match.area}
               />
-              <input
-                accept=".xlsx,.xls"
-                className="hidden"
-                id="excel-upload"
-                type="file"
-                onChange={handleFileUpload}
-              />
-              <Button
-                className="bg-green-700 text-white self-center"
-                onPress={() =>
-                  document?.getElementById("excel-upload")?.click()
-                }
+            ) : (
+              <Select
+                className="rounded-md"
+                label="Area"
+                placeholder="Seleccionar Area"
+                value={state.match.area}
+                onChange={handleAreaChange}
               >
-                Cargar Excel
-              </Button>
-            </div>
-            <div className="flex items-center gap-4">
-              <h2 className="text-black dark:text-white font-semibold text-3xl">
-                Area:
-              </h2>
-              {state.match.areaSeleccionada ? (
-                <Input
-                  isReadOnly
-                  className="rounded-md text-center font-bold"
-                  value={state.match.area}
-                />
-              ) : (
-                <Select
-                  className="rounded-md"
-                  label="Area"
-                  placeholder="Seleccionar Area"
-                  value={state.match.area}
-                  onChange={handleAreaChange}
-                >
-                  {items.map((item) => (
-                    <SelectItem key={item.key}>{item.label}</SelectItem>
-                  ))}
-                </Select>
-              )}
-            </div>
-            <div className="flex items-center gap-4">
-              <ModalLlaves bracket={state.bracket} />
-            </div>
-          </div>
-          <div className="grid grid-cols-2 gap-2 self-center">
-            <MenuComponent handleOpenKumiteDisplay={handleOpenKumiteDisplay} />
-          </div>
-        </div>
-        <div className="w-full flex justify-between items-start gap-4">
-          <div className="w-3/5">
-            <PanelCard
-              atenai={state.scores.aka.atenai}
-              atenaiChui={state.scores.aka.atenaiChui}
-              atenaiHansoku={state.scores.aka.atenaiHansoku}
-              cinto="aka"
-              disabled={state.match.ganador !== null}
-              imagen={AkaBelt}
-              ippon={state.scores.aka.ippon}
-              kiken={state.scores.aka.kiken}
-              kinshi={state.scores.aka.kinshi}
-              kinshiChui={state.scores.aka.kinshiChui}
-              kinshiHansoku={state.scores.aka.kinshiHansoku}
-              kinshiNi={state.scores.aka.kinshiNi}
-              nombre={state.scores.aka.nombre}
-              shikaku={state.scores.aka.shikaku}
-              wazari={state.scores.aka.wazari}
-              onAtenai={() =>
-                dispatch({
-                  type: "UPDATE_SCORE",
-                  competitor: "aka",
-                  payload: { atenai: true },
-                })
-              }
-              onAtenaiChui={() =>
-                dispatch({
-                  type: "UPDATE_SCORE",
-                  competitor: "aka",
-                  payload: { atenaiChui: true },
-                })
-              }
-              onAtenaiHansoku={handleAkaAtenaiHansoku}
-              onHantei={handleAkaHantei}
-              onIppon={handleAkaIppon}
-              onKiken={handleAkaKiken}
-              onKinshi={() =>
-                dispatch({
-                  type: "UPDATE_SCORE",
-                  competitor: "aka",
-                  payload: { kinshi: true },
-                })
-              }
-              onKinshiChui={() =>
-                dispatch({
-                  type: "UPDATE_SCORE",
-                  competitor: "aka",
-                  payload: { kinshiChui: true },
-                })
-              }
-              onKinshiHansoku={handleAkaKinshiHansoku}
-              onKinshiNi={() =>
-                dispatch({
-                  type: "UPDATE_SCORE",
-                  competitor: "aka",
-                  payload: { kinshiNi: true },
-                })
-              }
-              onShikaku={handleAkaShikaku}
-              onWazari={handleAkaWazari}
-            />
-          </div>
-          <div className="w-3/5 flex flex-col justify-center items-center gap-2">
-            <div className="flex gap-4 justify-center">
-              <Button
-                isDisabled={state.match.ganador !== null || isRunning}
-                onPress={() => seleccionarTiempo(180)}
-              >
-                3:00
-              </Button>
-              <Button
-                isDisabled={state.match.ganador !== null || isRunning}
-                onPress={() => seleccionarTiempo(120)}
-              >
-                2:00
-              </Button>
-              <Button
-                isDisabled={state.match.ganador !== null || isRunning}
-                onPress={() => seleccionarTiempo(60)}
-              >
-                1:00
-              </Button>
-            </div>
-
-            <Temporizador
-              initialTime={currentTime || selectedTime}
-              isRunning={isRunning}
-              resetKey={resetKey}
-              onTimeEnd={handleTimeEnd}
-              onTimeUpdate={updateSecondaryWindow}
-            />
-
-            <div className="flex gap-4 justify-center">
-              <Button
-                isDisabled={
-                  state.match.ganador !== null ||
-                  isRunning ||
-                  selectedTime === 0
-                }
-                onPress={iniciarTemporizador}
-              >
-                {isRunning ? "Reanudar" : "Iniciar"}
-              </Button>
-              <Button
-                isDisabled={state.match.ganador !== null || !isRunning}
-                onPress={detenerTemporizador}
-              >
-                Detener
-              </Button>
-              <Button
-                isDisabled={
-                  state.match.ganador !== null ||
-                  isRunning ||
-                  selectedTime === 0
-                }
-                onPress={reiniciarTemporizador}
-              >
-                Reiniciar
-              </Button>
-            </div>
-            {state.match.ganador && (
-              <Button color="success" onPress={handleNextMatch}>
-                Siguiente Combate
-              </Button>
+                {items.map((item) => (
+                  <SelectItem key={item.key}>{item.label}</SelectItem>
+                ))}
+              </Select>
             )}
-            <div className="flex flex-col gap-2">
-              <div className="flex gap-4 justify-center">
-                <Button
-                  isDisabled={state.match.ganador !== null}
-                  size="sm"
-                  variant="light"
-                  onPress={sonarCampana}
-                >
-                  Campana 30 seg
-                </Button>
-                <Button size="sm" variant="light" onPress={resetAll}>
-                  <MdLockReset className="text-2xl" />
-                </Button>
-                <Button
-                  isDisabled={state.match.ganador !== null}
-                  size="sm"
-                  variant="light"
-                  onPress={sonarCampanaFinal}
-                >
-                  Campana fin del tiempo
-                </Button>
-              </div>
-              <audio ref={audioRef}>
-                <source src={Bell} type="audio/wav" />
-                <track kind="captions" label="Español" src="" />
-              </audio>
-              <audio ref={audioFinalRef}>
-                <source src={Bell3} type="audio/wav" />
-                <track kind="captions" label="Español" src="" />
-              </audio>
-            </div>
           </div>
-          <div className="w-3/5">
-            <PanelCard
-              atenai={state.scores.shiro.atenai}
-              atenaiChui={state.scores.shiro.atenaiChui}
-              atenaiHansoku={state.scores.shiro.atenaiHansoku}
-              cinto="shiro"
-              disabled={state.match.ganador !== null}
-              imagen={ShiroBelt}
-              ippon={state.scores.shiro.ippon}
-              kiken={state.scores.shiro.kiken}
-              kinshi={state.scores.shiro.kinshi}
-              kinshiChui={state.scores.shiro.kinshiChui}
-              kinshiHansoku={state.scores.shiro.kinshiHansoku}
-              kinshiNi={state.scores.shiro.kinshiNi}
-              nombre={state.scores.shiro.nombre}
-              shikaku={state.scores.shiro.shikaku}
-              wazari={state.scores.shiro.wazari}
-              onAtenai={() =>
-                dispatch({
-                  type: "UPDATE_SCORE",
-                  competitor: "shiro",
-                  payload: { atenai: true },
-                })
-              }
-              onAtenaiChui={() =>
-                dispatch({
-                  type: "UPDATE_SCORE",
-                  competitor: "shiro",
-                  payload: { atenaiChui: true },
-                })
-              }
-              onAtenaiHansoku={handleShiroAtenaiHansoku}
-              onHantei={handleShiroHantei}
-              onIppon={handleShiroIppon}
-              onKiken={handleShiroKiken}
-              onKinshi={() =>
-                dispatch({
-                  type: "UPDATE_SCORE",
-                  competitor: "shiro",
-                  payload: { kinshi: true },
-                })
-              }
-              onKinshiChui={() =>
-                dispatch({
-                  type: "UPDATE_SCORE",
-                  competitor: "shiro",
-                  payload: { kinshiChui: true },
-                })
-              }
-              onKinshiHansoku={handleShiroKinshiHansoku}
-              onKinshiNi={() =>
-                dispatch({
-                  type: "UPDATE_SCORE",
-                  competitor: "shiro",
-                  payload: { kinshiNi: true },
-                })
-              }
-              onShikaku={handleShiroShikaku}
-              onWazari={handleShiroWazari}
-            />
+          <div className="flex items-center gap-4">
+            <ModalLlaves bracket={state.bracket} />
           </div>
         </div>
-        <Ganador
-          ganador={state.match.ganador}
-          isOpen={state.match.showGanador}
-          nombreGanador={state.match.ganadorNombre}
-          onClose={() =>
-            dispatch({ type: "UPDATE_MATCH", payload: { showGanador: false } })
-          }
-        />
+        <div className="grid grid-cols-2 gap-2 self-center">
+          <MenuComponent handleOpenKumiteDisplay={handleOpenKumiteDisplay} />
+        </div>
       </div>
-    </DefaultLayout>
+      <div className="w-full flex justify-between items-start gap-4">
+        <div className="w-3/5">
+          <PanelCard
+            atenai={state.scores.aka.atenai}
+            atenaiChui={state.scores.aka.atenaiChui}
+            atenaiHansoku={state.scores.aka.atenaiHansoku}
+            cinto="aka"
+            disabled={state.match.ganador !== null}
+            imagen={AkaBelt}
+            ippon={state.scores.aka.ippon}
+            kiken={state.scores.aka.kiken}
+            kinshi={state.scores.aka.kinshi}
+            kinshiChui={state.scores.aka.kinshiChui}
+            kinshiHansoku={state.scores.aka.kinshiHansoku}
+            kinshiNi={state.scores.aka.kinshiNi}
+            nombre={state.scores.aka.nombre}
+            shikaku={state.scores.aka.shikaku}
+            wazari={state.scores.aka.wazari}
+            onAtenai={() =>
+              dispatch({
+                type: "UPDATE_SCORE",
+                competitor: "aka",
+                payload: { atenai: true },
+              })
+            }
+            onAtenaiChui={() =>
+              dispatch({
+                type: "UPDATE_SCORE",
+                competitor: "aka",
+                payload: { atenaiChui: true },
+              })
+            }
+            onAtenaiHansoku={handleAkaAtenaiHansoku}
+            onHantei={handleAkaHantei}
+            onIppon={handleAkaIppon}
+            onKiken={handleAkaKiken}
+            onKinshi={() =>
+              dispatch({
+                type: "UPDATE_SCORE",
+                competitor: "aka",
+                payload: { kinshi: true },
+              })
+            }
+            onKinshiChui={() =>
+              dispatch({
+                type: "UPDATE_SCORE",
+                competitor: "aka",
+                payload: { kinshiChui: true },
+              })
+            }
+            onKinshiHansoku={handleAkaKinshiHansoku}
+            onKinshiNi={() =>
+              dispatch({
+                type: "UPDATE_SCORE",
+                competitor: "aka",
+                payload: { kinshiNi: true },
+              })
+            }
+            onShikaku={handleAkaShikaku}
+            onWazari={handleAkaWazari}
+          />
+        </div>
+        <div className="w-3/5 flex flex-col justify-center items-center gap-2">
+          <div className="flex gap-4 justify-center">
+            <Button
+              isDisabled={state.match.ganador !== null || isRunning}
+              onPress={() => seleccionarTiempo(180)}
+            >
+              3:00
+            </Button>
+            <Button
+              isDisabled={state.match.ganador !== null || isRunning}
+              onPress={() => seleccionarTiempo(120)}
+            >
+              2:00
+            </Button>
+            <Button
+              isDisabled={state.match.ganador !== null || isRunning}
+              onPress={() => seleccionarTiempo(60)}
+            >
+              1:00
+            </Button>
+          </div>
+
+          <Temporizador
+            initialTime={currentTime || selectedTime}
+            isRunning={isRunning}
+            resetKey={resetKey}
+            onTimeEnd={handleTimeEnd}
+            onTimeUpdate={updateSecondaryWindow}
+          />
+
+          <div className="flex gap-4 justify-center">
+            <Button
+              isDisabled={
+                state.match.ganador !== null || isRunning || selectedTime === 0
+              }
+              onPress={iniciarTemporizador}
+            >
+              {isRunning ? "Reanudar" : "Iniciar"}
+            </Button>
+            <Button
+              isDisabled={state.match.ganador !== null || !isRunning}
+              onPress={detenerTemporizador}
+            >
+              Detener
+            </Button>
+            <Button
+              isDisabled={
+                state.match.ganador !== null || isRunning || selectedTime === 0
+              }
+              onPress={reiniciarTemporizador}
+            >
+              Reiniciar
+            </Button>
+          </div>
+          {state.match.ganador && (
+            <Button color="success" onPress={handleNextMatch}>
+              Siguiente Combate
+            </Button>
+          )}
+          <div className="flex flex-col gap-2">
+            <div className="flex gap-4 justify-center">
+              <Button
+                isDisabled={state.match.ganador !== null}
+                size="sm"
+                variant="light"
+                onPress={sonarCampana}
+              >
+                Campana 30 seg
+              </Button>
+              <Button size="sm" variant="light" onPress={resetAll}>
+                <MdLockReset className="text-2xl" />
+              </Button>
+              <Button
+                isDisabled={state.match.ganador !== null}
+                size="sm"
+                variant="light"
+                onPress={sonarCampanaFinal}
+              >
+                Campana fin del tiempo
+              </Button>
+            </div>
+            <audio ref={audioRef}>
+              <source src={Bell} type="audio/wav" />
+              <track kind="captions" label="Español" src="" />
+            </audio>
+            <audio ref={audioFinalRef}>
+              <source src={Bell3} type="audio/wav" />
+              <track kind="captions" label="Español" src="" />
+            </audio>
+          </div>
+        </div>
+        <div className="w-3/5">
+          <PanelCard
+            atenai={state.scores.shiro.atenai}
+            atenaiChui={state.scores.shiro.atenaiChui}
+            atenaiHansoku={state.scores.shiro.atenaiHansoku}
+            cinto="shiro"
+            disabled={state.match.ganador !== null}
+            imagen={ShiroBelt}
+            ippon={state.scores.shiro.ippon}
+            kiken={state.scores.shiro.kiken}
+            kinshi={state.scores.shiro.kinshi}
+            kinshiChui={state.scores.shiro.kinshiChui}
+            kinshiHansoku={state.scores.shiro.kinshiHansoku}
+            kinshiNi={state.scores.shiro.kinshiNi}
+            nombre={state.scores.shiro.nombre}
+            shikaku={state.scores.shiro.shikaku}
+            wazari={state.scores.shiro.wazari}
+            onAtenai={() =>
+              dispatch({
+                type: "UPDATE_SCORE",
+                competitor: "shiro",
+                payload: { atenai: true },
+              })
+            }
+            onAtenaiChui={() =>
+              dispatch({
+                type: "UPDATE_SCORE",
+                competitor: "shiro",
+                payload: { atenaiChui: true },
+              })
+            }
+            onAtenaiHansoku={handleShiroAtenaiHansoku}
+            onHantei={handleShiroHantei}
+            onIppon={handleShiroIppon}
+            onKiken={handleShiroKiken}
+            onKinshi={() =>
+              dispatch({
+                type: "UPDATE_SCORE",
+                competitor: "shiro",
+                payload: { kinshi: true },
+              })
+            }
+            onKinshiChui={() =>
+              dispatch({
+                type: "UPDATE_SCORE",
+                competitor: "shiro",
+                payload: { kinshiChui: true },
+              })
+            }
+            onKinshiHansoku={handleShiroKinshiHansoku}
+            onKinshiNi={() =>
+              dispatch({
+                type: "UPDATE_SCORE",
+                competitor: "shiro",
+                payload: { kinshiNi: true },
+              })
+            }
+            onShikaku={handleShiroShikaku}
+            onWazari={handleShiroWazari}
+          />
+        </div>
+      </div>
+      <Ganador
+        ganador={state.match.ganador}
+        isOpen={state.match.showGanador}
+        nombreGanador={state.match.ganadorNombre}
+        onClose={() =>
+          dispatch({ type: "UPDATE_MATCH", payload: { showGanador: false } })
+        }
+      />
+    </div>
   );
 }

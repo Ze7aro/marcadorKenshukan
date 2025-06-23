@@ -18,7 +18,6 @@ import { MdCancel } from "react-icons/md";
 import { AgregarCompetidor } from "./KataComponents/AgregarCompetidor";
 import ResultadosFinales from "./KataComponents/ResultadosFinales";
 
-import DefaultLayout from "@/layouts/default";
 import Logo from "@/assets/images/kenshukan-logo.png";
 import { CommonInput } from "@/components/CommonInput";
 import { MenuComponent } from "@/components/MenuComponent";
@@ -561,241 +560,233 @@ export default function KataPage() {
   };
 
   return (
-    <DefaultLayout>
-      <div className="w-full h-screen justify-between flex flex-col p-10 bg-gradient-to-b from-blue-500/30 to-blue-800/90">
-        <div className="w-full flex justify-between">
-          <div className="w-[10%] h-[10%]">
-            <Image
-              alt="Logo"
-              className="w-full h-full object-cover rounded-full"
-              src={Logo}
-            />
-          </div>
-          <div className="flex gap-16 self-center">
-            <div className="flex gap-4">
-              <h3 className="font-semibold self-center  text-2xl">
-                Categoría:
-              </h3>
-              <CommonInput isReadOnly label="Categoria" value={categoria} />
-              <input
-                accept=".xlsx,.xls"
-                className="hidden"
-                id="excel-upload"
-                type="file"
-                onChange={handleFileUpload}
-              />
-              <Button
-                className="bg-green-700 text-white self-center"
-                onPress={() =>
-                  document?.getElementById("excel-upload")?.click()
-                }
-              >
-                Cargar Excel
-              </Button>
-            </div>
-          </div>
-          <div className="grid grid-cols-2 gap-2 self-center">
-            <MenuComponent handleOpenKataDisplay={handleOpenKataDisplay} />
-          </div>
-        </div>
-        <div className="w-full flex justify-center gap-6">
-          <div className="w-2/3 flex gap-2 justify-center">
-            <h3 className="font-semibold text-xl">COMPETIDORES:</h3>
-            <div className="min-w-[50%] overflow-auto">
-              <Table
-                fullWidth
-                isCompact
-                isHeaderSticky
-                classNames={{
-                  base: "max-h-[250px] overflowY-scroll",
-                }}
-              >
-                <TableHeader className="text-center">
-                  <TableColumn>NOMBRE</TableColumn>
-                  <TableColumn className="text-center">EDAD</TableColumn>
-                  <TableColumn className="text-center">KYU/DAN</TableColumn>
-                  <TableColumn className="text-center">
-                    PUNTAJE FINAL
-                  </TableColumn>
-                </TableHeader>
-                <TableBody emptyContent={"No hay competidores cargados."}>
-                  {competidores.map((competidor) => (
-                    <TableRow
-                      key={competidor.id}
-                      className={`${competidor.PuntajeFinal !== null ? "bg-blue-100" : ""} text-center`}
-                    >
-                      <TableCell>{competidor.Nombre}</TableCell>
-                      <TableCell className="text-center">
-                        {competidor.Edad}
-                      </TableCell>
-                      <TableCell className="text-center">
-                        {competidor.Categoria}
-                      </TableCell>
-                      <TableCell className="text-center">
-                        {competidor.Kiken
-                          ? "KIKEN"
-                          : competidor.PuntajeFinal
-                            ? (
-                                Math.round(competidor.PuntajeFinal * 10) / 10
-                              ).toFixed(1)
-                            : "-"}
-                      </TableCell>
-                    </TableRow>
-                  ))}
-                </TableBody>
-              </Table>
-            </div>
-          </div>
-          <div className="grid grid-cols-2 gap-2">
-            <Select
-              className="col-span-2 h-7"
-              label="PUNTUACION MEDIA:"
-              labelPlacement="outside"
-              placeholder="Seleccione"
-              selectedKeys={[base.toString()]}
-              onChange={(e) => {
-                setBase(parseInt(e.target.value));
-              }}
-            >
-              <SelectItem key={6}>6</SelectItem>
-              <SelectItem key={7}>7</SelectItem>
-              <SelectItem key={8}>8</SelectItem>
-            </Select>
-            <div className="col-span-2 text-xs text-gray-600 text-center">
-              {base === 6 && "Rango permitido: 5.0 - 7.0"}
-              {base === 7 && "Rango permitido: 6.0 - 8.0"}
-              {base === 8 && "Rango permitido: 7.0 - 9.0"}
-            </div>
-            <Button
-              size="md"
-              onPress={() => {
-                setJudges(Array(3).fill(""));
-                setNumJudges(3);
-              }}
-            >
-              3 Jueces
-            </Button>
-            <Button
-              size="md"
-              onPress={() => {
-                setJudges(Array(5).fill(""));
-                setNumJudges(5);
-              }}
-            >
-              5 Jueces
-            </Button>
-            <Button
-              className="bg-green-500 text-white font-semibold hover:bg-green-400 rounded-md col-span-2"
-              size="md"
-              onPress={agregarCompetidor}
-            >
-              + Agregar competidor
-            </Button>
-          </div>
-        </div>
-
-        <div className="flex justify-between">
-          {judges.map((judge, index) => (
-            <Input
-              key={index}
-              isClearable
-              className={`w-auto`}
-              endContent={<MdCancel />}
-              errorMessage={
-                <p className="text-shadow-lg/30 font-semibold">
-                  Puntaje requerido
-                </p>
-              }
-              isInvalid={submitted && !judge}
-              label={`JUEZ ${index === 0 ? "PRINCIPAL" : index}`}
-              labelPlacement="outside"
-              maxLength={3}
-              placeholder={`JUEZ ${index === 0 ? "PRINCIPAL" : index}`}
-              size="lg"
-              tabIndex={index + 1}
-              type="text"
-              value={judge}
-              variant="faded"
-              onBlur={() => handleBlur(index)}
-              onChange={(e) => handleChange(index, e)}
-              onClear={() => handleClear(index)}
-            />
-          ))}
-          <div className="flex flex-col gap-4">
-            <Button
-              className="bg-gray-500 text-white font-semibold hover:bg-gray-400 rounded-md"
-              tabIndex={judges.length + 1}
-              onPress={calc}
-            >
-              Calcular
-            </Button>
-            <Button
-              className="bg-red-500 text-white font-semibold hover:bg-red-400"
-              tabIndex={judges.length + 2}
-              onPress={handleKiken}
-            >
-              Kiken
-            </Button>
-          </div>
-        </div>
-
-        <div
-          className={`flex ${judges.length === 5 ? "justify-between" : "justify-end"} ${judges.length === 5 ? "gap-0" : "gap-96"}`}
-        >
-          {judges.length !== 3 && (
-            <Input
-              className="w-auto h-5 rounded-md text-7xl"
-              label="Menor puntaje:"
-              labelPlacement="outside"
-              placeholder="Menor"
-              size="lg"
-              value={lowScore}
-            />
-          )}
-          {judges.length !== 3 && (
-            <Input
-              className="w-auto h-5 rounded-md text-7xl"
-              label="Mayor puntaje:"
-              labelPlacement="outside"
-              placeholder="Mayor"
-              size="lg"
-              value={highScore}
-            />
-          )}
-          <Input
-            className="w-auto h-5 rounded-md text-7xl justify-end"
-            label="Puntaje Final:"
-            labelPlacement="outside"
-            placeholder="Total"
-            size="lg"
-            value={score}
+    <div className="w-full h-screen justify-between flex flex-col px-10 py-2 bg-gradient-to-b from-blue-500/30 to-blue-800/90">
+      <div className="w-full flex justify-between">
+        <div className="w-[10%] h-[10%]">
+          <Image
+            alt="Logo"
+            className="w-full h-full object-cover rounded-full"
+            src={Logo}
           />
-          <div className="grid grid-cols-2 gap-4">
-            <Button onPress={clearAll}>Limpiar</Button>
+        </div>
+        <div className="flex gap-16 self-center">
+          <div className="flex gap-4">
+            <h3 className="font-semibold self-center  text-2xl">Categoría:</h3>
+            <CommonInput isReadOnly label="Categoria" value={categoria} />
+            <input
+              accept=".xlsx,.xls"
+              className="hidden"
+              id="excel-upload"
+              type="file"
+              onChange={handleFileUpload}
+            />
             <Button
-              className="bg-blue-500 text-white font-semibold hover:bg-blue-400"
-              onPress={handleSave}
+              className="bg-green-700 text-white self-center"
+              onPress={() => document?.getElementById("excel-upload")?.click()}
             >
-              Guardar
-            </Button>
-            <Button className="col-span-2" onPress={resetAll}>
-              Reiniciar Todo
+              Cargar Excel
             </Button>
           </div>
         </div>
-        <ResultadosFinales
-          competidores={competidores}
-          judges={judges}
-          showDialog={showResults}
-          tituloCategoria={tituloCategoria}
-          onClose={() => setShowResults(false)}
-        />
-        <AgregarCompetidor
-          showDialog={showAgregarDialog}
-          onClose={() => setShowAgregarDialog(false)}
-          onSubmit={handleAgregarSubmit}
-        />
+        <div className="grid grid-cols-2 gap-2 self-center">
+          <MenuComponent handleOpenKataDisplay={handleOpenKataDisplay} />
+        </div>
       </div>
-    </DefaultLayout>
+      <div className="w-full flex justify-center gap-6">
+        <div className="w-2/3 flex gap-2 justify-center">
+          <h3 className="font-semibold text-xl">COMPETIDORES:</h3>
+          <div className="min-w-[50%] overflow-auto">
+            <Table
+              fullWidth
+              isCompact
+              isHeaderSticky
+              classNames={{
+                base: "max-h-[250px] overflowY-scroll",
+              }}
+            >
+              <TableHeader className="text-center">
+                <TableColumn>NOMBRE</TableColumn>
+                <TableColumn className="text-center">EDAD</TableColumn>
+                <TableColumn className="text-center">KYU/DAN</TableColumn>
+                <TableColumn className="text-center">PUNTAJE FINAL</TableColumn>
+              </TableHeader>
+              <TableBody emptyContent={"No hay competidores cargados."}>
+                {competidores.map((competidor) => (
+                  <TableRow
+                    key={competidor.id}
+                    className={`${competidor.PuntajeFinal !== null ? "bg-blue-100" : ""} text-center`}
+                  >
+                    <TableCell>{competidor.Nombre}</TableCell>
+                    <TableCell className="text-center">
+                      {competidor.Edad}
+                    </TableCell>
+                    <TableCell className="text-center">
+                      {competidor.Categoria}
+                    </TableCell>
+                    <TableCell className="text-center">
+                      {competidor.Kiken
+                        ? "KIKEN"
+                        : competidor.PuntajeFinal
+                          ? (
+                              Math.round(competidor.PuntajeFinal * 10) / 10
+                            ).toFixed(1)
+                          : "-"}
+                    </TableCell>
+                  </TableRow>
+                ))}
+              </TableBody>
+            </Table>
+          </div>
+        </div>
+        <div className="grid grid-cols-2 gap-2">
+          <Select
+            className="col-span-2 h-7"
+            label="PUNTUACION MEDIA:"
+            labelPlacement="outside"
+            placeholder="Seleccione"
+            selectedKeys={[base.toString()]}
+            onChange={(e) => {
+              setBase(parseInt(e.target.value));
+            }}
+          >
+            <SelectItem key={6}>6</SelectItem>
+            <SelectItem key={7}>7</SelectItem>
+            <SelectItem key={8}>8</SelectItem>
+          </Select>
+          <div className="col-span-2 text-xs text-gray-600 text-center">
+            {base === 6 && "Rango permitido: 5.0 - 7.0"}
+            {base === 7 && "Rango permitido: 6.0 - 8.0"}
+            {base === 8 && "Rango permitido: 7.0 - 9.0"}
+          </div>
+          <Button
+            size="md"
+            onPress={() => {
+              setJudges(Array(3).fill(""));
+              setNumJudges(3);
+            }}
+          >
+            3 Jueces
+          </Button>
+          <Button
+            size="md"
+            onPress={() => {
+              setJudges(Array(5).fill(""));
+              setNumJudges(5);
+            }}
+          >
+            5 Jueces
+          </Button>
+          <Button
+            className="bg-green-500 text-white font-semibold hover:bg-green-400 rounded-md col-span-2"
+            size="md"
+            onPress={agregarCompetidor}
+          >
+            + Agregar competidor
+          </Button>
+        </div>
+      </div>
+
+      <div className="flex justify-between">
+        {judges.map((judge, index) => (
+          <Input
+            key={index}
+            isClearable
+            className={`w-auto`}
+            endContent={<MdCancel />}
+            errorMessage={
+              <p className="text-shadow-lg/30 font-semibold">
+                Puntaje requerido
+              </p>
+            }
+            isInvalid={submitted && !judge}
+            label={`JUEZ ${index === 0 ? "PRINCIPAL" : index}`}
+            labelPlacement="outside"
+            maxLength={3}
+            placeholder={`JUEZ ${index === 0 ? "PRINCIPAL" : index}`}
+            size="lg"
+            tabIndex={index + 1}
+            type="text"
+            value={judge}
+            variant="faded"
+            onBlur={() => handleBlur(index)}
+            onChange={(e) => handleChange(index, e)}
+            onClear={() => handleClear(index)}
+          />
+        ))}
+        <div className="flex flex-col gap-4">
+          <Button
+            className="bg-gray-500 text-white font-semibold hover:bg-gray-400 rounded-md"
+            tabIndex={judges.length + 1}
+            onPress={calc}
+          >
+            Calcular
+          </Button>
+          <Button
+            className="bg-red-500 text-white font-semibold hover:bg-red-400"
+            tabIndex={judges.length + 2}
+            onPress={handleKiken}
+          >
+            Kiken
+          </Button>
+        </div>
+      </div>
+
+      <div
+        className={`flex ${judges.length === 5 ? "justify-between" : "justify-end"} ${judges.length === 5 ? "gap-0" : "gap-96"}`}
+      >
+        {judges.length !== 3 && (
+          <Input
+            className="w-auto h-5 rounded-md text-7xl"
+            label="Menor puntaje:"
+            labelPlacement="outside"
+            placeholder="Menor"
+            size="lg"
+            value={lowScore}
+          />
+        )}
+        {judges.length !== 3 && (
+          <Input
+            className="w-auto h-5 rounded-md text-7xl"
+            label="Mayor puntaje:"
+            labelPlacement="outside"
+            placeholder="Mayor"
+            size="lg"
+            value={highScore}
+          />
+        )}
+        <Input
+          className="w-auto h-5 rounded-md text-7xl justify-end"
+          label="Puntaje Final:"
+          labelPlacement="outside"
+          placeholder="Total"
+          size="lg"
+          value={score}
+        />
+        <div className="grid grid-cols-2 gap-4">
+          <Button onPress={clearAll}>Limpiar</Button>
+          <Button
+            className="bg-blue-500 text-white font-semibold hover:bg-blue-400"
+            onPress={handleSave}
+          >
+            Guardar
+          </Button>
+          <Button className="col-span-2" onPress={resetAll}>
+            Reiniciar Todo
+          </Button>
+        </div>
+      </div>
+      <ResultadosFinales
+        competidores={competidores}
+        judges={judges}
+        showDialog={showResults}
+        tituloCategoria={tituloCategoria}
+        onClose={() => setShowResults(false)}
+      />
+      <AgregarCompetidor
+        showDialog={showAgregarDialog}
+        onClose={() => setShowAgregarDialog(false)}
+        onSubmit={handleAgregarSubmit}
+      />
+    </div>
   );
 }
