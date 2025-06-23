@@ -1,5 +1,6 @@
 import { useState, useEffect, useRef, useReducer } from "react";
 import { Button, Input, Select, SelectItem, Image } from "@heroui/react";
+import { MdLockReset } from "react-icons/md";
 import * as XLSX from "xlsx";
 
 import { PanelCard } from "./KumiteComponents/PanelCard";
@@ -19,6 +20,15 @@ import { Competidor } from "@/types";
 import { generateBracket } from "@/utils/bracketUtils";
 
 const kumiteChannel = new BroadcastChannel("kumite-channel");
+
+// Función para crear bracket por defecto
+const createDefaultBracket = () => {
+  const defaultCompetitors: Competidor[] = [
+    { id: 1, Nombre: "AKA", Edad: 0 },
+    { id: 2, Nombre: "SHIRO", Edad: 0 },
+  ];
+  return generateBracket(defaultCompetitors);
+};
 
 const initialState = {
   timer: {
@@ -42,7 +52,7 @@ const initialState = {
       atenaiHansoku: false,
       shikaku: false,
       kiken: false,
-      nombre: "",
+      nombre: "AKA",
     },
     shiro: {
       wazari: 0,
@@ -56,7 +66,7 @@ const initialState = {
       atenaiHansoku: false,
       shikaku: false,
       kiken: false,
-      nombre: "",
+      nombre: "SHIRO",
     },
   },
   match: {
@@ -67,7 +77,7 @@ const initialState = {
     area: "",
     areaSeleccionada: false,
   },
-  bracket: [],
+  bracket: createDefaultBracket(), // Inicializar con bracket por defecto
   currentRoundIndex: 0,
   currentMatchIndex: 0,
 };
@@ -97,6 +107,20 @@ function reducer(state: any, action: any) {
       };
     case "SET_BRACKET":
       return { ...state, bracket: action.payload };
+    case "INIT_DEFAULT_BRACKET":
+      return {
+        ...state,
+        bracket: createDefaultBracket(),
+        currentRoundIndex: 0,
+        currentMatchIndex: 0,
+        match: {
+          ...state.match,
+          ganador: null,
+          showGanador: false,
+          ganadorNombre: "",
+        },
+        scores: initialState.scores,
+      };
     case "NEXT_MATCH":
       return {
         ...state,
@@ -162,6 +186,16 @@ export default function KumitePage() {
   };
 
   useEffect(() => {
+    // Verificar que exista un bracket y un match actual antes de verificar puntajes
+    if (
+      !state.bracket.length ||
+      !state.bracket[state.currentRoundIndex] ||
+      !state.bracket[state.currentRoundIndex][state.currentMatchIndex] ||
+      state.match.ganador
+    ) {
+      return;
+    }
+
     const puntajeAka = calcularPuntaje(
       state.scores.aka.wazari,
       state.scores.aka.ippon
@@ -173,8 +207,8 @@ export default function KumitePage() {
 
     if (puntajeAka >= 3) {
       const currentMatch =
-        state.bracket[state.currentRoundIndex]?.[state.currentMatchIndex];
-      const akaCompetidor = currentMatch?.pair[0];
+        state.bracket[state.currentRoundIndex][state.currentMatchIndex];
+      const akaCompetidor = currentMatch.pair[0];
       const akaNombre =
         typeof akaCompetidor === "object"
           ? akaCompetidor.Nombre
@@ -182,8 +216,8 @@ export default function KumitePage() {
       handleGanador("aka", akaNombre);
     } else if (puntajeShiro >= 3) {
       const currentMatch =
-        state.bracket[state.currentRoundIndex]?.[state.currentMatchIndex];
-      const shiroCompetidor = currentMatch?.pair[1];
+        state.bracket[state.currentRoundIndex][state.currentMatchIndex];
+      const shiroCompetidor = currentMatch.pair[1];
       const shiroNombre =
         typeof shiroCompetidor === "object"
           ? shiroCompetidor.Nombre
@@ -195,6 +229,10 @@ export default function KumitePage() {
     state.scores.aka.ippon,
     state.scores.shiro.wazari,
     state.scores.shiro.ippon,
+    state.bracket,
+    state.currentRoundIndex,
+    state.currentMatchIndex,
+    state.match.ganador,
   ]);
 
   const iniciarTemporizador = () => {
@@ -251,6 +289,16 @@ export default function KumitePage() {
       type: "RESET_ALL",
     });
   }
+
+  const initDefaultBracket = () => {
+    setIsRunning(false);
+    setSelectedTime(180);
+    setCurrentTime(180);
+    setResetKey((prev) => prev + 1);
+    dispatch({
+      type: "INIT_DEFAULT_BRACKET",
+    });
+  };
 
   const sonarCampana = () => {
     audioRef.current?.play();
@@ -406,6 +454,15 @@ export default function KumitePage() {
     ganador: "aka" | "shiro",
     nombreCompetidor?: string
   ) => {
+    // Verificar que exista un match actual
+    if (
+      !state.bracket.length ||
+      !state.bracket[state.currentRoundIndex] ||
+      !state.bracket[state.currentRoundIndex][state.currentMatchIndex]
+    ) {
+      return;
+    }
+
     const currentMatch =
       state.bracket[state.currentRoundIndex][state.currentMatchIndex];
     const ganadorCompetidor =
@@ -466,6 +523,13 @@ export default function KumitePage() {
   };
 
   const handleAkaShikaku = () => {
+    if (
+      !state.bracket.length ||
+      !state.bracket[state.currentRoundIndex] ||
+      !state.bracket[state.currentRoundIndex][state.currentMatchIndex]
+    ) {
+      return;
+    }
     const currentMatch =
       state.bracket[state.currentRoundIndex][state.currentMatchIndex];
     const shiroCompetidor = currentMatch.pair[1];
@@ -477,6 +541,13 @@ export default function KumitePage() {
   };
 
   const handleAkaKiken = () => {
+    if (
+      !state.bracket.length ||
+      !state.bracket[state.currentRoundIndex] ||
+      !state.bracket[state.currentRoundIndex][state.currentMatchIndex]
+    ) {
+      return;
+    }
     const currentMatch =
       state.bracket[state.currentRoundIndex][state.currentMatchIndex];
     const shiroCompetidor = currentMatch.pair[1];
@@ -488,6 +559,13 @@ export default function KumitePage() {
   };
 
   const handleShiroShikaku = () => {
+    if (
+      !state.bracket.length ||
+      !state.bracket[state.currentRoundIndex] ||
+      !state.bracket[state.currentRoundIndex][state.currentMatchIndex]
+    ) {
+      return;
+    }
     const currentMatch =
       state.bracket[state.currentRoundIndex][state.currentMatchIndex];
     const akaCompetidor = currentMatch.pair[0];
@@ -497,6 +575,13 @@ export default function KumitePage() {
   };
 
   const handleShiroKiken = () => {
+    if (
+      !state.bracket.length ||
+      !state.bracket[state.currentRoundIndex] ||
+      !state.bracket[state.currentRoundIndex][state.currentMatchIndex]
+    ) {
+      return;
+    }
     const currentMatch =
       state.bracket[state.currentRoundIndex][state.currentMatchIndex];
     const akaCompetidor = currentMatch.pair[0];
@@ -511,6 +596,13 @@ export default function KumitePage() {
       competitor: "aka",
       payload: { kinshiHansoku: true },
     });
+    if (
+      !state.bracket.length ||
+      !state.bracket[state.currentRoundIndex] ||
+      !state.bracket[state.currentRoundIndex][state.currentMatchIndex]
+    ) {
+      return;
+    }
     const currentMatch =
       state.bracket[state.currentRoundIndex][state.currentMatchIndex];
     const shiroCompetidor = currentMatch.pair[1];
@@ -527,6 +619,13 @@ export default function KumitePage() {
       competitor: "aka",
       payload: { atenaiHansoku: true },
     });
+    if (
+      !state.bracket.length ||
+      !state.bracket[state.currentRoundIndex] ||
+      !state.bracket[state.currentRoundIndex][state.currentMatchIndex]
+    ) {
+      return;
+    }
     const currentMatch =
       state.bracket[state.currentRoundIndex][state.currentMatchIndex];
     const shiroCompetidor = currentMatch.pair[1];
@@ -543,6 +642,13 @@ export default function KumitePage() {
       competitor: "shiro",
       payload: { kinshiHansoku: true },
     });
+    if (
+      !state.bracket.length ||
+      !state.bracket[state.currentRoundIndex] ||
+      !state.bracket[state.currentRoundIndex][state.currentMatchIndex]
+    ) {
+      return;
+    }
     const currentMatch =
       state.bracket[state.currentRoundIndex][state.currentMatchIndex];
     const akaCompetidor = currentMatch.pair[0];
@@ -557,6 +663,13 @@ export default function KumitePage() {
       competitor: "shiro",
       payload: { atenaiHansoku: true },
     });
+    if (
+      !state.bracket.length ||
+      !state.bracket[state.currentRoundIndex] ||
+      !state.bracket[state.currentRoundIndex][state.currentMatchIndex]
+    ) {
+      return;
+    }
     const currentMatch =
       state.bracket[state.currentRoundIndex][state.currentMatchIndex];
     const akaCompetidor = currentMatch.pair[0];
@@ -566,6 +679,13 @@ export default function KumitePage() {
   };
 
   const handleAkaHantei = () => {
+    if (
+      !state.bracket.length ||
+      !state.bracket[state.currentRoundIndex] ||
+      !state.bracket[state.currentRoundIndex][state.currentMatchIndex]
+    ) {
+      return;
+    }
     const currentMatch =
       state.bracket[state.currentRoundIndex][state.currentMatchIndex];
     const akaCompetidor = currentMatch.pair[0];
@@ -575,6 +695,13 @@ export default function KumitePage() {
   };
 
   const handleShiroHantei = () => {
+    if (
+      !state.bracket.length ||
+      !state.bracket[state.currentRoundIndex] ||
+      !state.bracket[state.currentRoundIndex][state.currentMatchIndex]
+    ) {
+      return;
+    }
     const currentMatch =
       state.bracket[state.currentRoundIndex][state.currentMatchIndex];
     const shiroCompetidor = currentMatch.pair[1];
@@ -908,26 +1035,26 @@ export default function KumitePage() {
               </Button>
             </div>
             {state.match.ganador && (
-              <Button
-                color="success"
-                className="mt-4"
-                onPress={handleNextMatch}
-              >
+              <Button color="success" onPress={handleNextMatch}>
                 Siguiente Combate
               </Button>
             )}
             <div className="flex flex-col gap-2">
-              <Button onPress={resetAll}>Reiniciar Todo</Button>
-              <div className="flex gap-10 justify-center">
+              <div className="flex gap-4 justify-center">
                 <Button
                   isDisabled={state.match.ganador !== null}
+                  size="sm"
                   variant="light"
                   onPress={sonarCampana}
                 >
                   Campana 30 seg
                 </Button>
+                <Button size="sm" variant="light" onPress={resetAll}>
+                  <MdLockReset className="text-2xl" />
+                </Button>
                 <Button
                   isDisabled={state.match.ganador !== null}
+                  size="sm"
                   variant="light"
                   onPress={sonarCampanaFinal}
                 >

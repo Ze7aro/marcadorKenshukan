@@ -16,15 +16,15 @@ interface PanelCardProps {
   nombre: string;
   ippon: number;
   wazari: number;
-  kiken: number;
-  kinshi: number;
-  kinshiChui: number;
-  kinshiHansoku: number;
-  kinshiNi: number;
-  shikaku: number;
-  atenai: number;
-  atenaiChui: number;
-  atenaiHansoku: number;
+  kiken: boolean;
+  kinshi: boolean;
+  kinshiChui: boolean;
+  kinshiHansoku: boolean;
+  kinshiNi: boolean;
+  shikaku: boolean;
+  atenai: boolean;
+  atenaiChui: boolean;
+  atenaiHansoku: boolean;
   disabled: boolean;
   onIppon: () => void;
   onWazari: () => void;
@@ -68,7 +68,7 @@ const PenaltyButton = memo(
     label: string;
     onClick: () => void;
     isDisabled: boolean;
-    isActive: number;
+    isActive: boolean;
   }) => (
     <Button isDisabled={isDisabled} size="sm" onPress={onClick}>
       {isActive ? <RiCloseCircleLine /> : label}

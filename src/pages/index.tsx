@@ -19,7 +19,11 @@ import Kumite from "@/assets/images/kumite.png";
 import KataKanshi from "@/assets/images/kata-kanshi.png";
 import KumiKanshi from "@/assets/images/kumi-kanshi.png";
 import TeKanshi from "@/assets/images/te-kanshi.png";
+import ExcelKata from "@/assets/images/Ejemplo excel kata.jpg";
+import ExcelKumite from "@/assets/images/Ejemplo excel kumite.jpg";
+import Reglamento from "@/assets/World Union of Karate TRADUCCION  Final (1).pdf";
 import DefaultLayout from "@/layouts/default";
+import PDFReader from "@/components/PDFReader";
 
 const styleButton =
   "w-[20%] h-[80%] cursor-pointer font-bold text-center shadow-md hover:shadow-lg italic flex flex-col hover:text-white";
@@ -126,35 +130,52 @@ export default function IndexPage() {
       title: "Desarrollado por",
       content: (
         <div className="space-y-4">
-          <p className="text-gray-700">
-            Kenshukan Dojo - Sistema de marcador para competencias de Karate Do
-          </p>
+          <p className="text-gray-700">Mi, no hay necesidad de saber mas.</p>
         </div>
       ),
     },
     {
-      title: "Información adicional 1",
+      title: "Excel para Kata",
       content: (
-        <div className="w-full h-32 bg-gray-100 rounded-lg flex items-center justify-center text-gray-500">
-          Div en blanco 1
+        <div className="w-full bg-gray-100 rounded-lg flex items-center justify-start text-gray-500">
+          <div className="flex flex-col gap-2">
+            <p>
+              Para cargar los competidores, se debe usar el siguiente formato de
+              Excel:
+            </p>
+            <Image alt="Excel Kata" src={ExcelKata} />
+            <p>
+              Con el excel en ese formato, la aplicacion puede cargar
+              competidores sin problema. Sin embargo si falta algun competidor
+              se puede agregar desde la interfaz de la aplicacion.
+            </p>
+          </div>
         </div>
       ),
     },
     {
-      title: "Información adicional 2",
+      title: "Excel para Kumite",
       content: (
-        <div className="w-full h-32 bg-gray-100 rounded-lg flex items-center justify-center text-gray-500">
-          Div en blanco 2
+        <div className="w-full bg-gray-100 rounded-lg flex items-center justify-start text-gray-500">
+          <div className="flex flex-col gap-2">
+            <p>
+              Para cargar los competidores, se debe usar el siguiente formato de
+              Excel:
+            </p>
+            <Image alt="Excel Kumite" src={ExcelKumite} />
+            <p>
+              Con el excel en ese formato, la aplicacion puede cargar
+              competidores sin problema. NO SE PUEDEN AGREGAR COMPETIDORES DESDE
+              LA INTERFAZ DE LA APLICACION, asique en caso de faltar se debe
+              modificar el excel antes que empiece la competencia.
+            </p>
+          </div>
         </div>
       ),
     },
     {
-      title: "Información adicional 3",
-      content: (
-        <div className="w-full h-32 bg-gray-100 rounded-lg flex items-center justify-center text-gray-500">
-          Div en blanco 3
-        </div>
-      ),
+      title: "Reglamento",
+      content: <PDFReader fileUrl={Reglamento} />,
     },
   ];
 
@@ -173,16 +194,16 @@ export default function IndexPage() {
           </Button>
         </div>
 
-        <div
+        {/*       <div
           className={`pointer-events-none absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 ${
             isOpen ? "z-0" : "z-[9999]"
           }`}
         >
-          <Image alt="Logo" className="w-60 rounded-full" src={Logo} />
-        </div>
+          <Image alt="Logo" className="w-[20%] rounded-full" src={Logo} />
+        </div> */}
         <div className="w-full h-full flex items-center relative justify-center">
           <Button
-            className={`${styleButton} pl-20 items-start rounded-l-full bg-gradient-to-r from-zinc-100 to-blue-600 hover:bg-gradient-to-r hover:from-zinc-200 hover:to-blue-700`}
+            className={`${styleButton} pl-14 items-start rounded-l-full bg-gradient-to-r from-zinc-100 to-blue-600 hover:bg-gradient-to-r hover:from-zinc-200 hover:to-blue-700`}
             onPress={handleKataClick}
           >
             <Image
@@ -197,8 +218,13 @@ export default function IndexPage() {
               <h2 className="text-xl font-bold">Kata</h2>
             </div>
           </Button>
+          <div
+            className={`pointer-events-none w-[10%]  absolute ${isOpen ? "z-0" : "z-[9999]"}`}
+          >
+            <Image alt="Logo" className="rounded-full" src={Logo} />
+          </div>
           <Button
-            className={`${styleButton} pr-20 items-end rounded-r-full bg-gradient-to-r from-blue-600 to-zinc-300 hover:bg-gradient-to-r hover:from-blue-700 hover:to-zinc-200`}
+            className={`${styleButton} pr-14 items-end rounded-r-full bg-gradient-to-r from-blue-600 to-zinc-300 hover:bg-gradient-to-r hover:from-blue-700 hover:to-zinc-200`}
             onPress={handleKumiteClick}
           >
             <Image
