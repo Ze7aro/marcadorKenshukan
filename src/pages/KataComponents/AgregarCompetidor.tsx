@@ -1,4 +1,4 @@
-import { useState, FC } from "react";
+import { useState, FC, useEffect } from "react";
 import {
   Modal,
   ModalContent,
@@ -8,6 +8,8 @@ import {
   Input,
   Button,
   Form,
+  Select,
+  SelectItem,
 } from "@heroui/react";
 
 interface ModalProps {
@@ -25,32 +27,25 @@ export const AgregarCompetidor: FC<ModalProps> = ({
   onClose,
   onSubmit,
 }) => {
-  const [numero, setNumero] = useState("");
-  const [ordinal, setOrdinal] = useState("er");
+  const [ordinal, setOrdinal] = useState("1er");
   const [categoriaTipo, setCategoriaTipo] = useState("KYU");
   const [competidor, setCompetidor] = useState({
     Nombre: "",
     Edad: 0,
-    Categoria: "",
+    Categoria: "1er KYU",
   });
   const regex = /^[A-Za-zÁÉÍÓÚáéíóúÑñ\s]+$/;
 
-  const actualizarCategoria = (num: string, ord: string, cat: string) => {
-    // Validar que el número esté entre 1 y 10 antes de setear
-    const numeroValido = Number(num);
-
-    if (numeroValido >= 1 && numeroValido <= 10) {
-      setCompetidor({
-        ...competidor,
-        Categoria: `${numeroValido}${ord} ${cat}`,
-      });
-    }
-  };
+  useEffect(() => {
+    setCompetidor((c) => ({ ...c, Categoria: `${ordinal} ${categoriaTipo}` }));
+  }, [ordinal, categoriaTipo]);
 
   const handleSubmit = (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     onSubmit(competidor);
-    setCompetidor({ Nombre: "", Edad: 0, Categoria: "" });
+    setCompetidor({ Nombre: "", Edad: 0, Categoria: "1er KYU" });
+    setOrdinal("1er");
+    setCategoriaTipo("KYU");
   };
 
   return (
@@ -76,78 +71,59 @@ export const AgregarCompetidor: FC<ModalProps> = ({
                 setCompetidor({ ...competidor, Nombre: e.target.value })
               }
             />
-            <Input
-              isRequired
-              errorMessage="Solo numeros permitidos"
-              label="Edad:"
-              labelPlacement="outside"
-              maxLength={2}
-              min={0}
-              name="edad"
-              placeholder="Edad del competidor"
-              type="number"
-              value={competidor.Edad.toString()}
-              onChange={(e) =>
-                setCompetidor({ ...competidor, Edad: Number(e.target.value) })
-              }
-            />
-            <Input
-              isRequired
-              endContent={
-                <div className="flex items-center gap-4">
-                  <select
-                    className="outline-none border-0 bg-transparent text-default-400 text-small"
-                    id="ordinal"
-                    name="ordinal"
-                    value={ordinal}
-                    onChange={(e) => {
-                      setOrdinal(e.target.value);
-                      actualizarCategoria(
-                        numero,
-                        e.target.value,
-                        categoriaTipo
-                      );
-                    }}
-                  >
-                    <option value="er">er</option>
-                    <option value="do">do</option>
-                    <option value="to">to</option>
-                    <option value="mo">mo</option>
-                    <option value="vo">vo</option>
-                    <option value="no">no</option>
-                  </select>
-                  <select
-                    className="outline-none border-0 bg-transparent text-default-400 text-small"
-                    id="category"
-                    name="category"
-                    value={categoriaTipo}
-                    onChange={(e) => {
-                      setCategoriaTipo(e.target.value);
-                      actualizarCategoria(numero, ordinal, e.target.value);
-                    }}
-                  >
-                    <option value="KYU">KYU</option>
-                    <option value="DAN">DAN</option>
-                  </select>
-                </div>
-              }
-              errorMessage="Solo válidos números del 1 al 10"
-              label="KYU/DAN:"
-              labelPlacement="outside"
-              max={10}
-              maxLength={2}
-              min={1}
-              minLength={1}
-              placeholder="Ingrese el número"
-              type="number"
-              value={numero}
-              onChange={(e) => {
-                const val = e.target.value;
-
-                setNumero(val);
-                actualizarCategoria(val, ordinal, categoriaTipo);
-              }}
-            />
+            <div className="w-full flex gap-2">
+              <Input
+                isRequired
+                errorMessage="Solo numeros permitidos"
+                label="Edad:"
+                labelPlacement="outside"
+                maxLength={2}
+                min={0}
+                name="edad"
+                placeholder="Edad del competidor"
+                type="number"
+                value={competidor.Edad.toString()}
+                onChange={(e) =>
+                  setCompetidor({ ...competidor, Edad: Number(e.target.value) })
+                }
+              />
+              <Select
+                isRequired
+                className="outline-none border-0 bg-transparent text-default-400 text-small"
+                label="Categoria:"
+                labelPlacement="outside"
+                name="ordinal"
+                placeholder="Ordinal"
+                value={ordinal}
+                onChange={(e) => {
+                  setOrdinal(e.target.value);
+                }}
+              >
+                <SelectItem key="1er">1er</SelectItem>
+                <SelectItem key="2do">2do</SelectItem>
+                <SelectItem key="3er">3er</SelectItem>
+                <SelectItem key="4to">4to</SelectItem>
+                <SelectItem key="5to">5to</SelectItem>
+                <SelectItem key="6to">6to</SelectItem>
+                <SelectItem key="7mo">7mo</SelectItem>
+                <SelectItem key="8vo">8vo</SelectItem>
+                <SelectItem key="9no">9no</SelectItem>
+                <SelectItem key="10mo">10mo</SelectItem>
+              </Select>
+              <Select
+                isRequired
+                className="outline-none border-0 bg-transparent text-default-400 text-small"
+                name="category"
+                placeholder="KYU/DAN"
+                value={categoriaTipo}
+                onChange={(e) => {
+                  setCategoriaTipo(e.target.value);
+                }}
+              >
+                <SelectItem key="KYU">KYU</SelectItem>
+                <SelectItem key="DAN">DAN</SelectItem>
+              </Select>
+            </div>
           </Form>
         </ModalBody>
         <ModalFooter>
@@ -155,7 +131,7 @@ export const AgregarCompetidor: FC<ModalProps> = ({
             className="bg-red-500 text-white font-semibold hover:bg-red-400"
             onPress={() => {
               onClose();
-              setCompetidor({ Nombre: "", Edad: 0, Categoria: "" });
+              setCompetidor({ Nombre: "", Edad: 0, Categoria: "1er KYU" });
             }}
           >
             Cancelar
@@ -165,7 +141,9 @@ export const AgregarCompetidor: FC<ModalProps> = ({
             type="submit"
             onPress={() => {
               onSubmit(competidor);
-              setCompetidor({ Nombre: "", Edad: 0, Categoria: "" });
+              setCompetidor({ Nombre: "", Edad: 0, Categoria: "1er KYU" });
+              setOrdinal("1er");
+              setCategoriaTipo("KYU");
             }}
           >
             Agregar

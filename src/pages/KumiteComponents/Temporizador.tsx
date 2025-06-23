@@ -61,7 +61,7 @@ export const Temporizador: FC<TemporizadorProps> = ({
   };
 
   return (
-    <div className="bg-white p-4 rounded-lg box-shadow-lg">
+    <div className="bg-background/70 dark:bg-default-100/50 p-4 rounded-lg box-shadow-lg">
       <div className="text-center">
         <div className="text-lg mb-2">TIEMPO</div>
         <div className="text-8xl font-bold">{formatTime(timeLeft)}</div>

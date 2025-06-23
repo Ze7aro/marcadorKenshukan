@@ -105,6 +105,7 @@ export default function KataPage() {
 
   const [showResults, setShowResults] = useState(false);
   const [showAgregarDialog, setShowAgregarDialog] = useState(false);
+  const [submitted, setSubmitted] = useState(false);
 
   // Memoizar los valores calculados
   const competidorActual = useMemo(() => {
@@ -157,6 +158,9 @@ export default function KataPage() {
   // Memoizar los handlers
   const handleChange = useCallback(
     (index: number, e: React.ChangeEvent<HTMLInputElement>) => {
+      if (submitted) {
+        setSubmitted(false);
+      }
       const value = e.target.value;
 
       // Validar formato: solo números, punto y máximo un punto
@@ -210,10 +214,13 @@ export default function KataPage() {
       updatedJudges[index] = processedValue;
       setJudges(updatedJudges);
     },
-    [judges, base]
+    [judges, base, submitted]
   );
 
   const handleClear = (index: number) => {
+    if (submitted) {
+      setSubmitted(false);
+    }
     const updatedJudges = [...judges];
 
     updatedJudges[index] = "";
@@ -233,6 +240,7 @@ export default function KataPage() {
   };
 
   const calc = () => {
+    setSubmitted(true);
     const updatedJudges = judges.map((judge: string) => {
       if (judge.endsWith(".")) {
         return judge + "0";
@@ -247,14 +255,18 @@ export default function KataPage() {
       .filter((judge: string) => judge !== "")
       .sort((a: string, b: string) => parseFloat(a) - parseFloat(b));
 
-    if (updatedJudges.length === 3) {
-      const total = updatedJudges.reduce(
+    if (sortedJudges.length !== numJudges) {
+      return;
+    }
+
+    if (numJudges === 3) {
+      const total = sortedJudges.reduce(
         (sum: number, judge: string) => sum + parseFloat(judge),
         0
       );
 
       setScore((Math.round(total * 10) / 10).toString());
-    } else if (sortedJudges.length === 5 || sortedJudges.length === 7) {
+    } else if (numJudges === 5) {
       const total = sortedJudges
         .slice(1, -1)
         .reduce((sum: number, judge: string) => sum + parseFloat(judge), 0);
@@ -264,9 +276,8 @@ export default function KataPage() {
       setLowScore(low);
       setHighScore(high);
       setScore((Math.round(total * 10) / 10).toString());
-    } else {
-      alert("Complete todos los Puntajes de los Jueces.");
     }
+    setSubmitted(false);
   };
 
   const clearAll = () => {
@@ -278,6 +289,9 @@ export default function KataPage() {
     localStorage.removeItem("kataLowScore");
     localStorage.removeItem("kataHighScore");
     localStorage.removeItem("kataScore");
+    if (submitted) {
+      setSubmitted(false);
+    }
   };
 
   const handleSave = () => {
@@ -587,7 +601,7 @@ export default function KataPage() {
         <div className="w-full flex justify-center gap-6">
           <div className="w-2/3 flex gap-2 justify-center">
             <h3 className="font-semibold text-xl">COMPETIDORES:</h3>
-            <div className="min-w-[50%] overflow-auto bg-white rounded-lg">
+            <div className="min-w-[50%] overflow-auto">
               <Table
                 fullWidth
                 isCompact
@@ -685,8 +699,14 @@ export default function KataPage() {
             <Input
               key={index}
               isClearable
-              className="w-auto h-5 text-7xl"
+              className={`w-auto`}
               endContent={<MdCancel />}
+              errorMessage={
+                <p className="text-shadow-lg/30 font-semibold">
+                  Puntaje requerido
+                </p>
+              }
+              isInvalid={submitted && !judge}
               label={`JUEZ ${index === 0 ? "PRINCIPAL" : index}`}
               labelPlacement="outside"
               maxLength={3}
@@ -695,6 +715,7 @@ export default function KataPage() {
               tabIndex={index + 1}
               type="text"
               value={judge}
+              variant="faded"
               onBlur={() => handleBlur(index)}
               onChange={(e) => handleChange(index, e)}
               onClear={() => handleClear(index)}
