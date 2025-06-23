@@ -3,7 +3,7 @@ import { Button, Input, Select, SelectItem, Image } from "@heroui/react";
 import * as XLSX from "xlsx";
 
 import { PanelCard } from "./KumiteComponents/PanelCard";
-import ModalLlaves from "./KataComponents/ModalLlaves";
+import ModalLlaves from "./KumiteComponents/ModalLlaves";
 import { Ganador } from "./KumiteComponents/Ganador";
 import { Temporizador } from "./KumiteComponents/Temporizador";
 
@@ -15,6 +15,8 @@ import AkaBelt from "@/assets/images/akaStill.gif";
 import DefaultLayout from "@/layouts/default";
 import { MenuComponent } from "@/components/MenuComponent";
 import { CommonInput } from "@/components/CommonInput";
+import { Competidor } from "@/types";
+import { generateBracket } from "@/utils/bracketUtils";
 
 const kumiteChannel = new BroadcastChannel("kumite-channel");
 
@@ -59,11 +61,15 @@ const initialState = {
   },
   match: {
     ganador: null,
+    ganadorNombre: "",
     showGanador: false,
     categoria: "",
     area: "",
     areaSeleccionada: false,
   },
+  bracket: [],
+  currentRoundIndex: 0,
+  currentMatchIndex: 0,
 };
 
 function reducer(state: any, action: any) {
@@ -89,17 +95,26 @@ function reducer(state: any, action: any) {
         ...state,
         match: { ...state.match, ...action.payload },
       };
+    case "SET_BRACKET":
+      return { ...state, bracket: action.payload };
+    case "NEXT_MATCH":
+      return {
+        ...state,
+        currentMatchIndex: action.payload.currentMatchIndex,
+        currentRoundIndex: action.payload.currentRoundIndex,
+        match: {
+          ...state.match,
+          ganador: null,
+          showGanador: false,
+          ganadorNombre: "",
+        },
+        scores: initialState.scores,
+      };
     case "RESET_ALL":
       return initialState;
     default:
       return state;
   }
-}
-
-interface Competidor {
-  id: number;
-  Nombre: string;
-  Edad: number;
 }
 
 export default function KumitePage() {
@@ -158,17 +173,23 @@ export default function KumitePage() {
     );
 
     if (puntajeAka >= 3) {
-      dispatch({
-        type: "UPDATE_MATCH",
-        payload: { ganador: "aka", showGanador: true },
-      });
-      detenerTemporizador();
+      const currentMatch =
+        state.bracket[state.currentRoundIndex]?.[state.currentMatchIndex];
+      const akaCompetidor = currentMatch?.pair[0];
+      const akaNombre =
+        typeof akaCompetidor === "object"
+          ? akaCompetidor.Nombre
+          : akaCompetidor;
+      handleGanador("aka", akaNombre);
     } else if (puntajeShiro >= 3) {
-      dispatch({
-        type: "UPDATE_MATCH",
-        payload: { ganador: "shiro", showGanador: true },
-      });
-      detenerTemporizador();
+      const currentMatch =
+        state.bracket[state.currentRoundIndex]?.[state.currentMatchIndex];
+      const shiroCompetidor = currentMatch?.pair[1];
+      const shiroNombre =
+        typeof shiroCompetidor === "object"
+          ? shiroCompetidor.Nombre
+          : shiroCompetidor;
+      handleGanador("shiro", shiroNombre);
     }
   }, [
     state.scores.aka.wazari,
@@ -323,27 +344,36 @@ export default function KumitePage() {
         // Actualizar el estado con los competidores extraídos
         if (competidoresExtraidos.length > 0) {
           setCompetidores(competidoresExtraidos);
-        }
+          const bracketData = generateBracket(competidoresExtraidos);
 
-        if (categoriaCell || akaCell || shiroCell) {
-          dispatch({
-            type: "UPDATE_MATCH",
-            payload: { categoria: categoriaCell?.v || "" },
-          });
+          if (bracketData.length > 0 && bracketData[0].length > 0) {
+            const primerCombate = bracketData[0][0];
+            const aka = primerCombate.pair[0];
+            const shiro = primerCombate.pair[1];
 
-          dispatch({
-            type: "UPDATE_SCORE",
-            competitor: "aka",
-            payload: { nombre: akaCell?.v || "" },
-          });
+            dispatch({
+              type: "UPDATE_SCORE",
+              competitor: "aka",
+              payload: {
+                nombre: typeof aka === "object" ? aka.Nombre : aka,
+              },
+            });
+            dispatch({
+              type: "UPDATE_SCORE",
+              competitor: "shiro",
+              payload: {
+                nombre: typeof shiro === "object" ? shiro.Nombre : shiro,
+              },
+            });
+          }
+          dispatch({ type: "SET_BRACKET", payload: bracketData });
 
-          dispatch({
-            type: "UPDATE_SCORE",
-            competitor: "shiro",
-            payload: { nombre: shiroCell?.v || "" },
-          });
-
-          handleOpenKumiteDisplay();
+          if (categoriaCell) {
+            dispatch({
+              type: "UPDATE_MATCH",
+              payload: { categoria: categoriaCell?.v || "" },
+            });
+          }
         }
       };
       reader.readAsArrayBuffer(file);
@@ -357,36 +387,126 @@ export default function KumitePage() {
     });
   };
 
-  const handleAkaShikaku = () => {
+  const updateBracketWithWinner = (ganador: any) => {
+    const newBracket = [...state.bracket];
+    const currentMatch =
+      newBracket[state.currentRoundIndex][state.currentMatchIndex];
+
+    currentMatch.winner = ganador;
+
+    if (state.currentRoundIndex + 1 < newBracket.length) {
+      const nextRoundIndex = state.currentRoundIndex + 1;
+      const nextMatchIndex = Math.floor(state.currentMatchIndex / 2);
+      const nextMatch = newBracket[nextRoundIndex][nextMatchIndex];
+      const positionInPair = state.currentMatchIndex % 2;
+
+      nextMatch.pair[positionInPair] = ganador;
+    }
+
+    dispatch({ type: "SET_BRACKET", payload: newBracket });
+  };
+
+  const handleGanador = (
+    ganador: "aka" | "shiro",
+    nombreCompetidor?: string
+  ) => {
+    const currentMatch =
+      state.bracket[state.currentRoundIndex][state.currentMatchIndex];
+    const ganadorCompetidor =
+      ganador === "aka" ? currentMatch.pair[0] : currentMatch.pair[1];
+    const ganadorNombre =
+      nombreCompetidor ||
+      (typeof ganadorCompetidor === "object"
+        ? ganadorCompetidor.Nombre
+        : ganadorCompetidor);
+
     dispatch({
       type: "UPDATE_MATCH",
-      payload: { ganador: "shiro", showGanador: true },
+      payload: { ganador, showGanador: true, ganadorNombre },
     });
     detenerTemporizador();
+    updateBracketWithWinner(ganadorCompetidor);
+  };
+
+  const handleNextMatch = () => {
+    let newMatchIndex = state.currentMatchIndex + 1;
+    let newRoundIndex = state.currentRoundIndex;
+
+    if (newMatchIndex >= state.bracket[state.currentRoundIndex].length) {
+      newRoundIndex += 1;
+      newMatchIndex = 0;
+    }
+
+    if (newRoundIndex >= state.bracket.length) {
+      // Final del torneo
+      console.log("Fin del torneo");
+
+      return;
+    }
+
+    dispatch({
+      type: "NEXT_MATCH",
+      payload: {
+        currentMatchIndex: newMatchIndex,
+        currentRoundIndex: newRoundIndex,
+      },
+    });
+
+    const nextMatch = state.bracket[newRoundIndex][newMatchIndex];
+    const [aka, shiro] = nextMatch.pair;
+
+    dispatch({
+      type: "UPDATE_SCORE",
+      competitor: "aka",
+      payload: { nombre: typeof aka === "object" ? aka.Nombre : aka },
+    });
+    dispatch({
+      type: "UPDATE_SCORE",
+      competitor: "shiro",
+      payload: { nombre: typeof shiro === "object" ? shiro.Nombre : shiro },
+    });
+
+    reiniciarTemporizador();
+  };
+
+  const handleAkaShikaku = () => {
+    const currentMatch =
+      state.bracket[state.currentRoundIndex][state.currentMatchIndex];
+    const shiroCompetidor = currentMatch.pair[1];
+    const shiroNombre =
+      typeof shiroCompetidor === "object"
+        ? shiroCompetidor.Nombre
+        : shiroCompetidor;
+    handleGanador("shiro", shiroNombre);
   };
 
   const handleAkaKiken = () => {
-    dispatch({
-      type: "UPDATE_MATCH",
-      payload: { ganador: "shiro", showGanador: true },
-    });
-    detenerTemporizador();
+    const currentMatch =
+      state.bracket[state.currentRoundIndex][state.currentMatchIndex];
+    const shiroCompetidor = currentMatch.pair[1];
+    const shiroNombre =
+      typeof shiroCompetidor === "object"
+        ? shiroCompetidor.Nombre
+        : shiroCompetidor;
+    handleGanador("shiro", shiroNombre);
   };
 
   const handleShiroShikaku = () => {
-    dispatch({
-      type: "UPDATE_MATCH",
-      payload: { ganador: "aka", showGanador: true },
-    });
-    detenerTemporizador();
+    const currentMatch =
+      state.bracket[state.currentRoundIndex][state.currentMatchIndex];
+    const akaCompetidor = currentMatch.pair[0];
+    const akaNombre =
+      typeof akaCompetidor === "object" ? akaCompetidor.Nombre : akaCompetidor;
+    handleGanador("aka", akaNombre);
   };
 
   const handleShiroKiken = () => {
-    dispatch({
-      type: "UPDATE_MATCH",
-      payload: { ganador: "aka", showGanador: true },
-    });
-    detenerTemporizador();
+    const currentMatch =
+      state.bracket[state.currentRoundIndex][state.currentMatchIndex];
+    const akaCompetidor = currentMatch.pair[0];
+    const akaNombre =
+      typeof akaCompetidor === "object" ? akaCompetidor.Nombre : akaCompetidor;
+    handleGanador("aka", akaNombre);
   };
 
   const handleAkaKinshiHansoku = () => {
@@ -395,11 +515,14 @@ export default function KumitePage() {
       competitor: "aka",
       payload: { kinshiHansoku: true },
     });
-    dispatch({
-      type: "UPDATE_MATCH",
-      payload: { ganador: "shiro", showGanador: true },
-    });
-    detenerTemporizador();
+    const currentMatch =
+      state.bracket[state.currentRoundIndex][state.currentMatchIndex];
+    const shiroCompetidor = currentMatch.pair[1];
+    const shiroNombre =
+      typeof shiroCompetidor === "object"
+        ? shiroCompetidor.Nombre
+        : shiroCompetidor;
+    handleGanador("shiro", shiroNombre);
   };
 
   const handleAkaAtenaiHansoku = () => {
@@ -408,11 +531,14 @@ export default function KumitePage() {
       competitor: "aka",
       payload: { atenaiHansoku: true },
     });
-    dispatch({
-      type: "UPDATE_MATCH",
-      payload: { ganador: "shiro", showGanador: true },
-    });
-    detenerTemporizador();
+    const currentMatch =
+      state.bracket[state.currentRoundIndex][state.currentMatchIndex];
+    const shiroCompetidor = currentMatch.pair[1];
+    const shiroNombre =
+      typeof shiroCompetidor === "object"
+        ? shiroCompetidor.Nombre
+        : shiroCompetidor;
+    handleGanador("shiro", shiroNombre);
   };
 
   const handleShiroKinshiHansoku = () => {
@@ -421,11 +547,12 @@ export default function KumitePage() {
       competitor: "shiro",
       payload: { kinshiHansoku: true },
     });
-    dispatch({
-      type: "UPDATE_MATCH",
-      payload: { ganador: "aka", showGanador: true },
-    });
-    detenerTemporizador();
+    const currentMatch =
+      state.bracket[state.currentRoundIndex][state.currentMatchIndex];
+    const akaCompetidor = currentMatch.pair[0];
+    const akaNombre =
+      typeof akaCompetidor === "object" ? akaCompetidor.Nombre : akaCompetidor;
+    handleGanador("aka", akaNombre);
   };
 
   const handleShiroAtenaiHansoku = () => {
@@ -434,87 +561,96 @@ export default function KumitePage() {
       competitor: "shiro",
       payload: { atenaiHansoku: true },
     });
-    dispatch({
-      type: "UPDATE_MATCH",
-      payload: { ganador: "aka", showGanador: true },
-    });
-    detenerTemporizador();
+    const currentMatch =
+      state.bracket[state.currentRoundIndex][state.currentMatchIndex];
+    const akaCompetidor = currentMatch.pair[0];
+    const akaNombre =
+      typeof akaCompetidor === "object" ? akaCompetidor.Nombre : akaCompetidor;
+    handleGanador("aka", akaNombre);
   };
 
   const handleAkaHantei = () => {
-    dispatch({
-      type: "UPDATE_MATCH",
-      payload: { ganador: "aka", showGanador: true },
-    });
-    detenerTemporizador();
+    const currentMatch =
+      state.bracket[state.currentRoundIndex][state.currentMatchIndex];
+    const akaCompetidor = currentMatch.pair[0];
+    const akaNombre =
+      typeof akaCompetidor === "object" ? akaCompetidor.Nombre : akaCompetidor;
+    handleGanador("aka", akaNombre);
   };
 
   const handleShiroHantei = () => {
-    dispatch({
-      type: "UPDATE_MATCH",
-      payload: { ganador: "shiro", showGanador: true },
-    });
-    detenerTemporizador();
+    const currentMatch =
+      state.bracket[state.currentRoundIndex][state.currentMatchIndex];
+    const shiroCompetidor = currentMatch.pair[1];
+    const shiroNombre =
+      typeof shiroCompetidor === "object"
+        ? shiroCompetidor.Nombre
+        : shiroCompetidor;
+    handleGanador("shiro", shiroNombre);
   };
 
   const handleOpenKumiteDisplay = async () => {
-    const nuevaVentana = window.open(
-      "/kumite-display",
-      "_blank",
-      "width=1280,height=800"
-    );
+    window.open("/kumite-display", "_blank", "width=1280,height=800");
 
-    const dataParaEnviar = {
-      scores: {
-        aka: {
-          wazari: state.scores.aka.wazari,
-          ippon: state.scores.aka.ippon,
-          nombre: state.scores.aka.nombre,
-          kinshi: state.scores.aka.kinshi,
-          kinshiNi: state.scores.aka.kinshiNi,
-          kinshiChui: state.scores.aka.kinshiChui,
-          kinshiHansoku: state.scores.aka.kinshiHansoku,
-          atenai: state.scores.aka.atenai,
-          atenaiChui: state.scores.aka.atenaiChui,
-          atenaiHansoku: state.scores.aka.atenaiHansoku,
-          shikaku: state.scores.aka.shikaku,
-          kiken: state.scores.aka.kiken,
-        },
-        shiro: {
-          wazari: state.scores.shiro.wazari,
-          ippon: state.scores.shiro.ippon,
-          nombre: state.scores.shiro.nombre,
-          kinshi: state.scores.shiro.kinshi,
-          kinshiNi: state.scores.shiro.kinshiNi,
-          kinshiChui: state.scores.shiro.kinshiChui,
-          kinshiHansoku: state.scores.shiro.kinshiHansoku,
-          atenai: state.scores.shiro.atenai,
-          atenaiChui: state.scores.shiro.atenaiChui,
-          atenaiHansoku: state.scores.shiro.atenaiHansoku,
-          shikaku: state.scores.shiro.shikaku,
-          kiken: state.scores.shiro.kiken,
-        },
-      },
-      timer: {
-        isRunning: isRunning,
-        time: currentTime || selectedTime,
-      },
-    };
-
-    const interval = setInterval(() => {
-      if (nuevaVentana?.document?.readyState === "complete") {
-        nuevaVentana?.dispatchEvent(
-          new CustomEvent("update-kumite", { detail: dataParaEnviar })
-        );
-        clearInterval(interval);
-      }
-    }, 100);
-
+    // Se necesita un pequeño retraso para dar tiempo a la nueva ventana a que se abra
+    // y establezca sus listeners de eventos antes de enviar los datos.
     setTimeout(() => {
-      nuevaVentana?.dispatchEvent(
-        new CustomEvent("update-kumite", { detail: dataParaEnviar })
-      );
-    }, 500);
+      const currentMatch =
+        state.bracket.length > 0 &&
+        state.bracket.length > state.currentRoundIndex &&
+        state.bracket[state.currentRoundIndex].length > state.currentMatchIndex
+          ? state.bracket[state.currentRoundIndex][state.currentMatchIndex]
+          : null;
+
+      const nextMatch =
+        state.bracket.length > 0 &&
+        state.bracket.length > state.currentRoundIndex &&
+        state.bracket[state.currentRoundIndex].length >
+          state.currentMatchIndex + 1
+          ? state.bracket[state.currentRoundIndex][state.currentMatchIndex + 1]
+          : state.bracket.length > state.currentRoundIndex + 1
+            ? state.bracket[state.currentRoundIndex + 1][0]
+            : null;
+
+      const akaCompetitor = currentMatch?.pair[0];
+      const shiroCompetitor = currentMatch?.pair[1];
+
+      const akaNombre =
+        typeof akaCompetitor === "object"
+          ? akaCompetitor.Nombre
+          : typeof akaCompetitor === "string"
+            ? akaCompetitor
+            : state.scores.aka.nombre;
+      const shiroNombre =
+        typeof shiroCompetitor === "object"
+          ? shiroCompetitor.Nombre
+          : typeof shiroCompetitor === "string"
+            ? shiroCompetitor
+            : state.scores.shiro.nombre;
+
+      const dataParaEnviar = {
+        scores: {
+          aka: {
+            ...state.scores.aka,
+            nombre: akaNombre,
+          },
+          shiro: {
+            ...state.scores.shiro,
+            nombre: shiroNombre,
+          },
+        },
+        timer: {
+          isRunning: isRunning,
+          time: currentTime || selectedTime,
+        },
+        matchInfo: {
+          current: currentMatch,
+          next: nextMatch,
+        },
+      };
+
+      kumiteChannel.postMessage(dataParaEnviar);
+    }, 1000);
   };
 
   const updateSecondaryWindow = (currentTimeValue: any) => {
@@ -522,45 +658,71 @@ export default function KumitePage() {
   };
 
   useEffect(() => {
+    const currentMatch =
+      state.bracket.length > 0 &&
+      state.bracket.length > state.currentRoundIndex &&
+      state.bracket[state.currentRoundIndex].length > state.currentMatchIndex
+        ? state.bracket[state.currentRoundIndex][state.currentMatchIndex]
+        : null;
+
+    const nextMatch =
+      state.bracket.length > 0 &&
+      state.bracket.length > state.currentRoundIndex &&
+      state.bracket[state.currentRoundIndex].length >
+        state.currentMatchIndex + 1
+        ? state.bracket[state.currentRoundIndex][state.currentMatchIndex + 1]
+        : state.bracket.length > state.currentRoundIndex + 1
+          ? state.bracket[state.currentRoundIndex + 1][0]
+          : null;
+
+    const akaCompetitor = currentMatch?.pair[0];
+    const shiroCompetitor = currentMatch?.pair[1];
+
+    const akaNombre =
+      typeof akaCompetitor === "object"
+        ? akaCompetitor.Nombre
+        : typeof akaCompetitor === "string"
+          ? akaCompetitor
+          : state.scores.aka.nombre;
+    const shiroNombre =
+      typeof shiroCompetitor === "object"
+        ? shiroCompetitor.Nombre
+        : typeof shiroCompetitor === "string"
+          ? shiroCompetitor
+          : state.scores.shiro.nombre;
+
     const dataParaEnviar = {
       scores: {
         aka: {
-          wazari: state.scores.aka.wazari,
-          ippon: state.scores.aka.ippon,
-          nombre: state.scores.aka.nombre,
-          kinshi: state.scores.aka.kinshi,
-          kinshiNi: state.scores.aka.kinshiNi,
-          kinshiChui: state.scores.aka.kinshiChui,
-          kinshiHansoku: state.scores.aka.kinshiHansoku,
-          atenai: state.scores.aka.atenai,
-          atenaiChui: state.scores.aka.atenaiChui,
-          atenaiHansoku: state.scores.aka.atenaiHansoku,
-          shikaku: state.scores.aka.shikaku,
-          kiken: state.scores.aka.kiken,
+          ...state.scores.aka,
+          nombre: akaNombre,
         },
         shiro: {
-          wazari: state.scores.shiro.wazari,
-          ippon: state.scores.shiro.ippon,
-          nombre: state.scores.shiro.nombre,
-          kinshi: state.scores.shiro.kinshi,
-          kinshiNi: state.scores.shiro.kinshiNi,
-          kinshiChui: state.scores.shiro.kinshiChui,
-          kinshiHansoku: state.scores.shiro.kinshiHansoku,
-          atenai: state.scores.shiro.atenai,
-          atenaiChui: state.scores.shiro.atenaiChui,
-          atenaiHansoku: state.scores.shiro.atenaiHansoku,
-          shikaku: state.scores.shiro.shikaku,
-          kiken: state.scores.shiro.kiken,
+          ...state.scores.shiro,
+          nombre: shiroNombre,
         },
       },
       timer: {
         isRunning: isRunning,
         time: currentTime || selectedTime,
       },
+      matchInfo: {
+        current: currentMatch,
+        next: nextMatch,
+      },
     };
 
     kumiteChannel.postMessage(dataParaEnviar);
-  }, [state.scores, isRunning, currentTime, selectedTime]);
+  }, [
+    state.scores,
+    isRunning,
+    currentTime,
+    selectedTime,
+    state.bracket,
+    state.currentMatchIndex,
+    state.currentRoundIndex,
+  ]);
+  console.log(state);
 
   return (
     <DefaultLayout>
@@ -622,7 +784,7 @@ export default function KumitePage() {
               )}
             </div>
             <div className="flex items-center gap-4">
-              <ModalLlaves competidores={competidores} />
+              <ModalLlaves bracket={state.bracket} />
             </div>
           </div>
           <div className="grid grid-cols-2 gap-2 self-center">
@@ -749,6 +911,15 @@ export default function KumitePage() {
                 Reiniciar
               </Button>
             </div>
+            {state.match.ganador && (
+              <Button
+                color="success"
+                className="mt-4"
+                onPress={handleNextMatch}
+              >
+                Siguiente Combate
+              </Button>
+            )}
             <div className="flex flex-col gap-2">
               <Button onPress={resetAll}>Reiniciar Todo</Button>
               <div className="flex gap-10 justify-center">
@@ -842,6 +1013,7 @@ export default function KumitePage() {
         <Ganador
           ganador={state.match.ganador}
           isOpen={state.match.showGanador}
+          nombreGanador={state.match.ganadorNombre}
           onClose={() =>
             dispatch({ type: "UPDATE_MATCH", payload: { showGanador: false } })
           }

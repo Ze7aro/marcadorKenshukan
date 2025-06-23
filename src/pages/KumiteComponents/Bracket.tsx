@@ -1,40 +1,63 @@
 import React from "react";
+import { Card, CardBody } from "@heroui/react";
 
-interface Competidor {
-  id: number;
-  Nombre: string;
-  Edad: number;
-}
-
-interface Match {
-  pair: (Competidor | string)[];
-  winner: Competidor | string | null;
-}
+import { Match } from "@/types";
 
 interface BracketProps {
-  competidores: Competidor[];
+  bracket: Match[][];
 }
 
 interface MatchCardProps {
   match: Match;
 }
 
-const MatchCard: React.FC<MatchCardProps> = ({ match }) => (
-  <div className="border p-2 rounded-lg shadow-sm bg-white min-w-[200px]">
-    {match.pair.map((player, playerIndex) => (
-      <div
-        key={playerIndex}
-        className={`p-2 border ${
-          playerIndex === 0
-            ? "border-b rounded-lg bg-red-500 text-white"
-            : "border-t-0 rounded-lg"
-        } ${player === "BYE" ? "text-gray-400 italic" : ""}`}
-      >
-        {typeof player === "object" ? player.Nombre : player}
-      </div>
-    ))}
-  </div>
-);
+const MatchCard: React.FC<MatchCardProps> = ({ match }) => {
+  return (
+    <Card className="border p-2 rounded-lg shadow-sm bg-white min-w-[200px]">
+      <CardBody className="p-0">
+        {match.pair.map((competitor, competitorIndex) => {
+          let displayName: string;
+          let isWinner = false;
+
+          if (
+            typeof competitor === "object" &&
+            competitor !== null &&
+            "Nombre" in competitor
+          ) {
+            displayName = (competitor as any).Nombre;
+            if (
+              match.winner &&
+              typeof match.winner === "object" &&
+              match.winner !== null &&
+              "id" in match.winner
+            ) {
+              isWinner = (match.winner as any).id === (competitor as any).id;
+            }
+          } else {
+            displayName = competitor as string;
+          }
+
+          // Determinar si hay un ganador y si este competidor es el perdedor
+          const hayGanador = !!match.winner;
+          const esPerdedor = hayGanador && !isWinner && displayName !== "--";
+
+          return (
+            <div
+              key={competitorIndex}
+              className={`p-2 ${
+                competitorIndex === 0
+                  ? "rounded-t-lg border-b-2 bg-red-500 text-white border-gray-200"
+                  : "rounded-b-lg bg-white text-black"
+              } ${esPerdedor ? "line-through" : ""}`}
+            >
+              {displayName || "--"}
+            </div>
+          );
+        })}
+      </CardBody>
+    </Card>
+  );
+};
 
 interface RoundColumnProps {
   round: Match[];
@@ -57,6 +80,7 @@ const RoundColumn: React.FC<RoundColumnProps> = ({ round, roundIndex }) => {
   const gaps = ["2rem", "10rem", "20rem", "42rem"];
 
   const roundStyle: React.CSSProperties = {};
+
   if (roundIndex > 0) {
     roundStyle.placeSelf = "center";
   }
@@ -77,45 +101,8 @@ const RoundColumn: React.FC<RoundColumnProps> = ({ round, roundIndex }) => {
   );
 };
 
-const Bracket: React.FC<BracketProps> = ({ competidores }) => {
-  const generateBracket = (players: (Competidor | string)[]) => {
-    const numPlayers = players.length;
-
-    if (numPlayers < 2) {
-      return [];
-    }
-
-    const rounds: Match[][] = [];
-    let currentPlayers = [...players];
-
-    if (numPlayers > 2 && numPlayers % 2 !== 0) {
-      const closestPowerOfTwo = Math.pow(2, Math.ceil(Math.log2(numPlayers)));
-      const byes = closestPowerOfTwo - numPlayers;
-
-      currentPlayers = [...currentPlayers, ...Array(byes).fill("BYE")];
-    }
-
-    let roundPlayers = [...currentPlayers];
-
-    while (roundPlayers.length > 1) {
-      const roundMatches: Match[] = [];
-
-      for (let i = 0; i < roundPlayers.length; i += 2) {
-        roundMatches.push({
-          pair: [roundPlayers[i], roundPlayers[i + 1]],
-          winner: null,
-        });
-      }
-      rounds.push(roundMatches);
-      roundPlayers = roundMatches.map(() => "Winner");
-    }
-
-    return rounds;
-  };
-
-  const bracketData = generateBracket(competidores);
-
-  if (bracketData.length === 0) {
+const Bracket: React.FC<BracketProps> = ({ bracket }) => {
+  if (bracket.length === 0) {
     return (
       <div className="flex justify-center items-center p-4 text-gray-500">
         No hay suficientes competidores para generar las llaves.
@@ -132,7 +119,7 @@ const Bracket: React.FC<BracketProps> = ({ competidores }) => {
         <div className={"p-2 w-full text-center text-white italic"}>SHIRO</div>
       </div> */}
       <div className="flex items-start space-x-8">
-        {bracketData.map((round, roundIndex) => (
+        {bracket.map((round, roundIndex) => (
           <RoundColumn key={roundIndex} round={round} roundIndex={roundIndex} />
         ))}
       </div>

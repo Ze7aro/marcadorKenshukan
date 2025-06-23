@@ -13,17 +13,13 @@ import {
 import Bracket from "./Bracket";
 
 import Llaves from "@/assets/images/brackets-tree.svg";
+import { Match } from "@/types";
 
-interface Competidor {
-  id: number;
-  Nombre: string;
-  Edad: number;
-}
 export interface ModalLlavesProps {
-  competidores: Competidor[];
+  bracket: Match[][];
 }
 
-export default function ModalLlaves({ competidores }: ModalLlavesProps) {
+export default function ModalLlaves({ bracket }: ModalLlavesProps) {
   const { isOpen, onOpen, onOpenChange } = useDisclosure();
 
   return (
@@ -41,7 +37,7 @@ export default function ModalLlaves({ competidores }: ModalLlavesProps) {
                 Llaves de Competencia
               </ModalHeader>
               <ModalBody>
-                <Bracket competidores={competidores} />
+                <Bracket bracket={bracket} />
               </ModalBody>
               <ModalFooter>
                 <Button color="danger" variant="light" onPress={onClose}>

@@ -24,7 +24,6 @@ export const MenuComponent = ({
   const { pathname: href } = useLocation();
 
   const handleEvent = (e: any) => {
-    console.log(e);
     e.preventDefault();
   };
 

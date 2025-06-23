@@ -13,11 +13,17 @@ import ShiroBelt from "@/assets/images/shiroStill.gif";
 
 interface GanadorProps {
   ganador: "shiro" | "aka" | null;
+  nombreGanador?: string;
   isOpen: boolean;
   onClose: () => void;
 }
 
-export const Ganador = ({ ganador, isOpen, onClose }: GanadorProps) => {
+export const Ganador = ({
+  ganador,
+  isOpen,
+  onClose,
+  nombreGanador,
+}: GanadorProps) => {
   const [showAnimation, setShowAnimation] = useState(false);
 
   useEffect(() => {
@@ -31,7 +37,7 @@ export const Ganador = ({ ganador, isOpen, onClose }: GanadorProps) => {
   const getGanadorInfo = () => {
     if (ganador === "aka") {
       return {
-        nombre: "AKA (Rojo)",
+        nombre: "(AKA)",
         color: "text-red-600",
         bgColor: "bg-red-100",
         borderColor: "border-red-500",
@@ -39,7 +45,7 @@ export const Ganador = ({ ganador, isOpen, onClose }: GanadorProps) => {
       };
     } else if (ganador === "shiro") {
       return {
-        nombre: "SHIRO (Blanco)",
+        nombre: "(SHIRO)",
         color: "text-gray-700",
         bgColor: "bg-gray-100",
         borderColor: "border-gray-500",
@@ -78,7 +84,7 @@ export const Ganador = ({ ganador, isOpen, onClose }: GanadorProps) => {
               ¡GANADOR!
             </h1>
             <h1 className={`text-4xl font-semibold mb-4 ${ganadorInfo.color}`}>
-              {ganadorInfo.nombre}
+              {nombreGanador} {ganadorInfo.nombre}
             </h1>
             <div className="text-center">
               <p className="text-lg text-gray-600 dark:text-gray-300 mb-2">

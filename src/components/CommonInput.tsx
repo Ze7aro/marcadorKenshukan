@@ -14,9 +14,9 @@ export const CommonInput: FC<CommonInputProps> = ({
 }) => {
   return (
     <Input
-      className=" h-24 rounded-md px-2 py-1 text-center text-2xl border-2 border-gray-400 w-48"
+      className="w-auto rounded-md px-2 py-1 text-center text-2xl border-2 border-gray-400"
       classNames={{
-        input: "text-center text-4xl font-bold",
+        input: "text-center text-2xl font-bold",
         inputWrapper: "h-24",
       }}
       isReadOnly={isReadOnly}

@@ -111,7 +111,7 @@ export const PanelCard = (props: PanelCardProps) => {
           <Image alt="Belt" className="w-40 h-10" src={props.imagen} />
           <Input
             isReadOnly
-            className="w-full bg-transparent text-white text-xl font-boldrounded-md"
+            className="w-full bg-transparent text-black text-xl font-boldrounded-md"
             placeholder="Nombre del competidor"
             type="text"
             value={props.nombre}
