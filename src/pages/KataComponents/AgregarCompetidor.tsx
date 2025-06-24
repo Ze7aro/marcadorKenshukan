@@ -34,6 +34,18 @@ export const AgregarCompetidor: FC<ModalProps> = ({
     Edad: 0,
     Categoria: "1er KYU",
   });
+  const oridinalArray = [
+    { key: "1er", label: "1er" },
+    { key: "2do", label: "2do" },
+    { key: "3er", label: "3er" },
+    { key: "4to", label: "4to" },
+    { key: "5to", label: "5to" },
+    { key: "6to", label: "6to" },
+  ];
+  const categoriaArray = [
+    { key: "KYU", label: "KYU" },
+    { key: "DAN", label: "DAN" },
+  ];
   const regex = /^[A-Za-zÁÉÍÓÚáéíóúÑñ\s]+$/;
 
   useEffect(() => {
@@ -92,32 +104,24 @@ export const AgregarCompetidor: FC<ModalProps> = ({
                 label="Categoria:"
                 labelPlacement="outside"
                 placeholder="Ordinal"
-                value={ordinal}
                 onChange={(e) => {
                   setOrdinal(e.target.value);
                 }}
               >
-                <SelectItem key="1er">1er</SelectItem>
-                <SelectItem key="2do">2do</SelectItem>
-                <SelectItem key="3er">3er</SelectItem>
-                <SelectItem key="4to">4to</SelectItem>
-                <SelectItem key="5to">5to</SelectItem>
-                <SelectItem key="6to">6to</SelectItem>
-                <SelectItem key="7mo">7mo</SelectItem>
-                <SelectItem key="8vo">8vo</SelectItem>
-                <SelectItem key="9no">9no</SelectItem>
-                <SelectItem key="10mo">10mo</SelectItem>
+                {oridinalArray.map((ordinal) => (
+                  <SelectItem key={ordinal.key}>{ordinal.label}</SelectItem>
+                ))}
               </Select>
               <Select
                 isRequired
                 placeholder="KYU/DAN"
-                value={categoriaTipo}
                 onChange={(e) => {
                   setCategoriaTipo(e.target.value);
                 }}
               >
-                <SelectItem key="KYU">KYU</SelectItem>
-                <SelectItem key="DAN">DAN</SelectItem>
+                {categoriaArray.map((categoria) => (
+                  <SelectItem key={categoria.key}>{categoria.label}</SelectItem>
+                ))}
               </Select>
             </div>
           </Form>
