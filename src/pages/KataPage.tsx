@@ -88,6 +88,12 @@ export default function KataPage() {
 
     return saved || "";
   });
+  const [area, setArea] = useState<string>(() => {
+    const saved = localStorage.getItem("kataArea");
+
+    return saved || "";
+  });
+  const [areaSeleccionada, setAreaSeleccionada] = useState<boolean>(false);
   const [categorias, setCategorias] = useState<{
     mayores: string[];
     menores: string[];
@@ -101,6 +107,13 @@ export default function KataPage() {
           menores: [],
         };
   });
+  const items = [
+    { key: "1", label: "Area 1" },
+    { key: "2", label: "Area 2" },
+    { key: "3", label: "Area 3" },
+    { key: "4", label: "Area 4" },
+    { key: "5", label: "Area 5" },
+  ];
 
   const [showResults, setShowResults] = useState(false);
   const [showAgregarDialog, setShowAgregarDialog] = useState(false);
@@ -559,6 +572,12 @@ export default function KataPage() {
     }
   };
 
+  const handleAreaChange = (e: any) => {
+    setArea(e.target.value);
+    setAreaSeleccionada(true);
+    localStorage.setItem("kataArea", e.target.value);
+  };
+
   return (
     <div className="w-full h-screen justify-between flex flex-col px-10 py-2 bg-gradient-to-b from-blue-500/30 to-blue-800/90">
       <div className="w-full flex justify-between">
@@ -582,10 +601,35 @@ export default function KataPage() {
             />
             <Button
               className="bg-green-700 text-white self-center"
+              isDisabled={!areaSeleccionada}
               onPress={() => document?.getElementById("excel-upload")?.click()}
             >
               Cargar Excel
             </Button>
+          </div>
+          <div className="flex items-center gap-4">
+            <h2 className="text-black dark:text-white font-semibold text-3xl">
+              Area:
+            </h2>
+            {areaSeleccionada ? (
+              <Input
+                isReadOnly
+                className="rounded-md text-center font-bold"
+                value={area}
+              />
+            ) : (
+              <Select
+                className="rounded-md"
+                label="Area"
+                placeholder="Seleccionar Area"
+                value={area}
+                onChange={handleAreaChange}
+              >
+                {items.map((item) => (
+                  <SelectItem key={item.key}>{item.label}</SelectItem>
+                ))}
+              </Select>
+            )}
           </div>
         </div>
         <div className="grid grid-cols-2 gap-2 self-center">

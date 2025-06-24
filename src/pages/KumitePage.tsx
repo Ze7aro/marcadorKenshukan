@@ -863,6 +863,7 @@ export default function KumitePage() {
             />
             <Button
               className="bg-green-700 text-white self-center"
+              isDisabled={!state.match.areaSeleccionada}
               onPress={() => document?.getElementById("excel-upload")?.click()}
             >
               Cargar Excel
