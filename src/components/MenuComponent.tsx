@@ -23,14 +23,10 @@ export const MenuComponent = ({
   const navigate = useNavigate();
   const { pathname: href } = useLocation();
 
-  const handleEvent = (e: any) => {
-    e.preventDefault();
-  };
-
   return (
     <Dropdown placement="bottom-start">
       <DropdownTrigger>
-        <Button isIconOnly onPress={(e) => handleEvent(e)}>
+        <Button isIconOnly>
           <RiMenuUnfold4Fill />
         </Button>
       </DropdownTrigger>
@@ -68,7 +64,7 @@ export const MenuComponent = ({
             key="theme"
             isReadOnly
             className="hover:bg-transparent data-[hover=true]:bg-transparent cursor-default"
-            onPress={(e) => handleEvent(e)}
+            onPress={() => {}}
           >
             <ThemeSwitch />
           </DropdownItem>
