@@ -9,6 +9,7 @@ import {
   Button,
   Select,
   SelectItem,
+  NumberInput,
 } from "@heroui/react";
 
 interface ModalProps {
@@ -31,24 +32,9 @@ export const AgregarCompetidor: FC<ModalProps> = ({
   const [competidor, setCompetidor] = useState({
     Nombre: "",
     Edad: 0,
-    Categoria: "1er KYU",
+    Categoria: "",
   });
-  const oridinalArray = [
-    { key: "1er", label: "1er" },
-    { key: "2do", label: "2do" },
-    { key: "3er", label: "3er" },
-    { key: "4to", label: "4to" },
-    { key: "5to", label: "5to" },
-    { key: "6to", label: "6to" },
-    { key: "7mo", label: "7mo" },
-    { key: "8vo", label: "8vo" },
-    { key: "9no", label: "9no" },
-    { key: "10mo", label: "10mo" },
-  ];
-  const categoriaArray = [
-    { key: "KYU", label: "KYU" },
-    { key: "DAN", label: "DAN" },
-  ];
+
   const regex = /^[A-Za-zÁÉÍÓÚáéíóúÑñ\s]+$/;
 
   useEffect(() => {
@@ -56,6 +42,7 @@ export const AgregarCompetidor: FC<ModalProps> = ({
   }, [ordinal, categoriaTipo]);
 
   const handleSubmit = () => {
+    console.log(competidor);
     if (
       competidor.Nombre === "" ||
       competidor.Edad === 0 ||
@@ -92,47 +79,101 @@ export const AgregarCompetidor: FC<ModalProps> = ({
             }
           />
           <div className="w-full flex gap-2">
-            <Input
+            <NumberInput
               isRequired
-              errorMessage="Solo numeros permitidos"
               label="Edad:"
               labelPlacement="outside"
-              maxLength={2}
-              min={0}
-              name="edad"
-              placeholder="Edad del competidor"
-              type="number"
-              value={competidor.Edad.toString()}
-              onChange={(e) =>
-                setCompetidor({ ...competidor, Edad: Number(e.target.value) })
-              }
+              maxValue={100}
+              minValue={0}
+              placeholder="Edad"
+              onChange={(e) => {
+                setCompetidor({ ...competidor, Edad: Number(e) });
+              }}
             />
-            <Select
+
+            <Input
+              isReadOnly
               isRequired
-              aria-label="Ordinal"
+              className="w-48"
+              endContent={
+                <div className="flex items-center">
+                  <label className="sr-only" htmlFor="currency">
+                    Currency
+                  </label>
+                  <select
+                    aria-label="Select currency"
+                    className="outline-none border-0 bg-transparent text-zinc-700 text-small"
+                    defaultValue="KYU"
+                    id="currency"
+                    name="currency"
+                    onChange={(e) => {
+                      setCategoriaTipo(e.target.value);
+                    }}
+                  >
+                    <option aria-label="KYU" value="KYU">
+                      KYU
+                    </option>
+                    <option aria-label="DAN" value="DAN">
+                      DAN
+                    </option>
+                  </select>
+                </div>
+              }
               label="Categoria:"
               labelPlacement="outside"
-              placeholder="Ordinal"
-              onChange={(e) => {
-                setOrdinal(e.target.value);
-              }}
-            >
-              {oridinalArray.map((ordinal) => (
-                <SelectItem key={ordinal.key}>{ordinal.label}</SelectItem>
-              ))}
-            </Select>
-            <Select
-              isRequired
-              aria-label="Categoria"
-              placeholder="KYU/DAN"
-              onChange={(e) => {
-                setCategoriaTipo(e.target.value);
-              }}
-            >
-              {categoriaArray.map((categoria) => (
-                <SelectItem key={categoria.key}>{categoria.label}</SelectItem>
-              ))}
-            </Select>
+              startContent={
+                <div className="flex items-center">
+                  <label className="sr-only" htmlFor="currency">
+                    Currency
+                  </label>
+                  <select
+                    aria-label="Select currency"
+                    className="outline-none border-0 bg-transparent zinc-700 text-small"
+                    defaultValue="KYU"
+                    id="currency"
+                    name="currency"
+                    onChange={(e) => {
+                      setOrdinal(e.target.value);
+                    }}
+                  >
+                    <option aria-label="1er" value="1er">
+                      1er
+                    </option>
+                    <option aria-label="2do" value="2do">
+                      2do
+                    </option>
+                    <option aria-label="3er" value="3er">
+                      3er
+                    </option>
+                    <option aria-label="4to" value="4to">
+                      4to
+                    </option>
+                    <option aria-label="5to" value="5to">
+                      5to
+                    </option>
+                    <option aria-label="6to" value="6to">
+                      6to
+                    </option>
+                    <option aria-label="7mo" value="7mo">
+                      7mo
+                    </option>
+                    <option aria-label="8vo" value="8vo">
+                      8vo
+                    </option>
+                    <option aria-label="9no" value="9no">
+                      9no
+                    </option>
+                    <option aria-label="10mo" value="10mo">
+                      10mo
+                    </option>
+                  </select>
+                </div>
+              }
+              /*  onChange={(e) => {
+                console.log(e);
+                setOrdinal(e.toString());
+              }} */
+            />
           </div>
         </ModalBody>
         <ModalFooter>
