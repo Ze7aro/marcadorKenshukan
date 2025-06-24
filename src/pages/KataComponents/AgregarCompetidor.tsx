@@ -7,7 +7,6 @@ import {
   ModalFooter,
   Input,
   Button,
-  Form,
   Select,
   SelectItem,
 } from "@heroui/react";
@@ -52,12 +51,18 @@ export const AgregarCompetidor: FC<ModalProps> = ({
     setCompetidor((c) => ({ ...c, Categoria: `${ordinal} ${categoriaTipo}` }));
   }, [ordinal, categoriaTipo]);
 
-  const handleSubmit = (e: React.FormEvent<HTMLFormElement>) => {
-    e.preventDefault();
+  const handleSubmit = () => {
+    if (
+      competidor.Nombre === "" ||
+      competidor.Edad === 0 ||
+      competidor.Categoria === ""
+    ) {
+      return;
+    }
     onSubmit(competidor);
-    setCompetidor({ Nombre: "", Edad: 0, Categoria: "1er KYU" });
-    setOrdinal("1er");
-    setCategoriaTipo("KYU");
+    setCompetidor({ Nombre: "", Edad: 0, Categoria: "" });
+    setOrdinal("");
+    setCategoriaTipo("");
   };
 
   return (
@@ -65,73 +70,71 @@ export const AgregarCompetidor: FC<ModalProps> = ({
       <ModalContent>
         <ModalHeader>Agregar Nuevo Competidor</ModalHeader>
         <ModalBody>
-          <Form onSubmit={handleSubmit}>
+          <Input
+            isRequired
+            errorMessage="Ingresa un nombre valido"
+            label="Nombre:"
+            labelPlacement="outside"
+            name="nombre"
+            placeholder="Nombre del competidor"
+            validate={(value) => {
+              if (!regex.test(value)) {
+                return "Ingresa un nombre valido";
+              }
+            }}
+            value={competidor.Nombre}
+            onChange={(e) =>
+              setCompetidor({ ...competidor, Nombre: e.target.value })
+            }
+          />
+          <div className="w-full flex gap-2">
             <Input
               isRequired
-              errorMessage="Ingresa un nombre valido"
-              label="Nombre:"
+              errorMessage="Solo numeros permitidos"
+              label="Edad:"
               labelPlacement="outside"
-              name="nombre"
-              placeholder="Nombre del competidor"
-              validate={(value) => {
-                if (!regex.test(value)) {
-                  return "Ingresa un nombre valido";
-                }
-              }}
-              value={competidor.Nombre}
+              maxLength={2}
+              min={0}
+              name="edad"
+              placeholder="Edad del competidor"
+              type="number"
+              value={competidor.Edad.toString()}
               onChange={(e) =>
-                setCompetidor({ ...competidor, Nombre: e.target.value })
+                setCompetidor({ ...competidor, Edad: Number(e.target.value) })
               }
             />
-            <div className="w-full flex gap-2">
-              <Input
-                isRequired
-                errorMessage="Solo numeros permitidos"
-                label="Edad:"
-                labelPlacement="outside"
-                maxLength={2}
-                min={0}
-                name="edad"
-                placeholder="Edad del competidor"
-                type="number"
-                value={competidor.Edad.toString()}
-                onChange={(e) =>
-                  setCompetidor({ ...competidor, Edad: Number(e.target.value) })
-                }
-              />
-              <Select
-                isRequired
-                label="Categoria:"
-                labelPlacement="outside"
-                placeholder="Ordinal"
-                onChange={(e) => {
-                  setOrdinal(e.target.value);
-                }}
-              >
-                {oridinalArray.map((ordinal) => (
-                  <SelectItem key={ordinal.key}>{ordinal.label}</SelectItem>
-                ))}
-              </Select>
-              <Select
-                isRequired
-                placeholder="KYU/DAN"
-                onChange={(e) => {
-                  setCategoriaTipo(e.target.value);
-                }}
-              >
-                {categoriaArray.map((categoria) => (
-                  <SelectItem key={categoria.key}>{categoria.label}</SelectItem>
-                ))}
-              </Select>
-            </div>
-          </Form>
+            <Select
+              isRequired
+              label="Categoria:"
+              labelPlacement="outside"
+              placeholder="Ordinal"
+              onChange={(e) => {
+                setOrdinal(e.target.value);
+              }}
+            >
+              {oridinalArray.map((ordinal) => (
+                <SelectItem key={ordinal.key}>{ordinal.label}</SelectItem>
+              ))}
+            </Select>
+            <Select
+              isRequired
+              placeholder="KYU/DAN"
+              onChange={(e) => {
+                setCategoriaTipo(e.target.value);
+              }}
+            >
+              {categoriaArray.map((categoria) => (
+                <SelectItem key={categoria.key}>{categoria.label}</SelectItem>
+              ))}
+            </Select>
+          </div>
         </ModalBody>
         <ModalFooter>
           <Button
             className="bg-red-500 text-white font-semibold hover:bg-red-400"
             onPress={() => {
               onClose();
-              setCompetidor({ Nombre: "", Edad: 0, Categoria: "1er KYU" });
+              setCompetidor({ Nombre: "", Edad: 0, Categoria: "" });
             }}
           >
             Cancelar
@@ -139,12 +142,7 @@ export const AgregarCompetidor: FC<ModalProps> = ({
           <Button
             className="bg-white-500 text-zinc-800 font-semibold hover:bg-gray-400"
             type="submit"
-            onPress={() => {
-              onSubmit(competidor);
-              setCompetidor({ Nombre: "", Edad: 0, Categoria: "1er KYU" });
-              setOrdinal("1er");
-              setCategoriaTipo("KYU");
-            }}
+            onPress={() => handleSubmit()}
           >
             Agregar
           </Button>
