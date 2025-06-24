@@ -7,8 +7,6 @@ import {
   ModalFooter,
   Input,
   Button,
-  Select,
-  SelectItem,
   NumberInput,
 } from "@heroui/react";
 
@@ -27,8 +25,8 @@ export const AgregarCompetidor: FC<ModalProps> = ({
   onClose,
   onSubmit,
 }) => {
-  const [ordinal, setOrdinal] = useState("1er");
-  const [categoriaTipo, setCategoriaTipo] = useState("KYU");
+  const [ordinal, setOrdinal] = useState("");
+  const [categoriaTipo, setCategoriaTipo] = useState("");
   const [competidor, setCompetidor] = useState({
     Nombre: "",
     Edad: 0,
@@ -42,7 +40,6 @@ export const AgregarCompetidor: FC<ModalProps> = ({
   }, [ordinal, categoriaTipo]);
 
   const handleSubmit = () => {
-    console.log(competidor);
     if (
       competidor.Nombre === "" ||
       competidor.Edad === 0 ||
@@ -169,10 +166,6 @@ export const AgregarCompetidor: FC<ModalProps> = ({
                   </select>
                 </div>
               }
-              /*  onChange={(e) => {
-                console.log(e);
-                setOrdinal(e.toString());
-              }} */
             />
           </div>
         </ModalBody>
