@@ -89,10 +89,8 @@ export const AgregarCompetidor: FC<ModalProps> = ({
               />
               <Select
                 isRequired
-                className="outline-none border-0 bg-transparent text-default-400 text-small"
                 label="Categoria:"
                 labelPlacement="outside"
-                name="ordinal"
                 placeholder="Ordinal"
                 value={ordinal}
                 onChange={(e) => {
@@ -112,8 +110,6 @@ export const AgregarCompetidor: FC<ModalProps> = ({
               </Select>
               <Select
                 isRequired
-                className="outline-none border-0 bg-transparent text-default-400 text-small"
-                name="category"
                 placeholder="KYU/DAN"
                 value={categoriaTipo}
                 onChange={(e) => {
