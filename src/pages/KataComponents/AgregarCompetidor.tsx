@@ -40,6 +40,10 @@ export const AgregarCompetidor: FC<ModalProps> = ({
     { key: "4to", label: "4to" },
     { key: "5to", label: "5to" },
     { key: "6to", label: "6to" },
+    { key: "7mo", label: "7mo" },
+    { key: "8vo", label: "8vo" },
+    { key: "9no", label: "9no" },
+    { key: "10mo", label: "10mo" },
   ];
   const categoriaArray = [
     { key: "KYU", label: "KYU" },
@@ -66,7 +70,7 @@ export const AgregarCompetidor: FC<ModalProps> = ({
   };
 
   return (
-    <Modal isOpen={showDialog} onClose={onClose}>
+    <Modal className="absolute z-[999]" isOpen={showDialog} onClose={onClose}>
       <ModalContent>
         <ModalHeader>Agregar Nuevo Competidor</ModalHeader>
         <ModalBody>
@@ -105,6 +109,7 @@ export const AgregarCompetidor: FC<ModalProps> = ({
             />
             <Select
               isRequired
+              aria-label="Ordinal"
               label="Categoria:"
               labelPlacement="outside"
               placeholder="Ordinal"
@@ -118,6 +123,7 @@ export const AgregarCompetidor: FC<ModalProps> = ({
             </Select>
             <Select
               isRequired
+              aria-label="Categoria"
               placeholder="KYU/DAN"
               onChange={(e) => {
                 setCategoriaTipo(e.target.value);
