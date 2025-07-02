@@ -26,6 +26,7 @@ const createDefaultBracket = () => {
     { id: 1, Nombre: "AKA", Edad: 0 },
     { id: 2, Nombre: "SHIRO", Edad: 0 },
   ];
+
   return generateBracket(defaultCompetitors);
 };
 
@@ -212,6 +213,7 @@ export default function KumitePage() {
         typeof akaCompetidor === "object"
           ? akaCompetidor.Nombre
           : akaCompetidor;
+
       handleGanador("aka", akaNombre);
     } else if (puntajeShiro >= 3) {
       const currentMatch =
@@ -221,6 +223,7 @@ export default function KumitePage() {
         typeof shiroCompetidor === "object"
           ? shiroCompetidor.Nombre
           : shiroCompetidor;
+
       handleGanador("shiro", shiroNombre);
     }
   }, [
@@ -526,6 +529,7 @@ export default function KumitePage() {
       typeof shiroCompetidor === "object"
         ? shiroCompetidor.Nombre
         : shiroCompetidor;
+
     handleGanador("shiro", shiroNombre);
   };
 
@@ -544,6 +548,7 @@ export default function KumitePage() {
       typeof shiroCompetidor === "object"
         ? shiroCompetidor.Nombre
         : shiroCompetidor;
+
     handleGanador("shiro", shiroNombre);
   };
 
@@ -560,6 +565,7 @@ export default function KumitePage() {
     const akaCompetidor = currentMatch.pair[0];
     const akaNombre =
       typeof akaCompetidor === "object" ? akaCompetidor.Nombre : akaCompetidor;
+
     handleGanador("aka", akaNombre);
   };
 
@@ -576,6 +582,7 @@ export default function KumitePage() {
     const akaCompetidor = currentMatch.pair[0];
     const akaNombre =
       typeof akaCompetidor === "object" ? akaCompetidor.Nombre : akaCompetidor;
+
     handleGanador("aka", akaNombre);
   };
 
@@ -599,6 +606,7 @@ export default function KumitePage() {
       typeof shiroCompetidor === "object"
         ? shiroCompetidor.Nombre
         : shiroCompetidor;
+
     handleGanador("shiro", shiroNombre);
   };
 
@@ -622,6 +630,7 @@ export default function KumitePage() {
       typeof shiroCompetidor === "object"
         ? shiroCompetidor.Nombre
         : shiroCompetidor;
+
     handleGanador("shiro", shiroNombre);
   };
 
@@ -643,6 +652,7 @@ export default function KumitePage() {
     const akaCompetidor = currentMatch.pair[0];
     const akaNombre =
       typeof akaCompetidor === "object" ? akaCompetidor.Nombre : akaCompetidor;
+
     handleGanador("aka", akaNombre);
   };
 
@@ -664,6 +674,7 @@ export default function KumitePage() {
     const akaCompetidor = currentMatch.pair[0];
     const akaNombre =
       typeof akaCompetidor === "object" ? akaCompetidor.Nombre : akaCompetidor;
+
     handleGanador("aka", akaNombre);
   };
 
@@ -680,6 +691,7 @@ export default function KumitePage() {
     const akaCompetidor = currentMatch.pair[0];
     const akaNombre =
       typeof akaCompetidor === "object" ? akaCompetidor.Nombre : akaCompetidor;
+
     handleGanador("aka", akaNombre);
   };
 
@@ -698,6 +710,7 @@ export default function KumitePage() {
       typeof shiroCompetidor === "object"
         ? shiroCompetidor.Nombre
         : shiroCompetidor;
+
     handleGanador("shiro", shiroNombre);
   };
 
@@ -834,21 +847,25 @@ export default function KumitePage() {
     state.currentMatchIndex,
     state.currentRoundIndex,
   ]);
-  console.log(state);
 
   return (
-    <div className="w-full h-screen justify-between flex flex-col  px-10 py-2 bg-gradient-to-b from-blue-500/30 to-blue-800/90">
-      <div className="w-full flex justify-between">
-        <div className="w-[10%] h-[10%]">
+    <div className="w-full h-screen flex flex-col px-4 md:px-10 py-2  bg-gradient-to-b from-blue-500/30 to-blue-800/90">
+      {/* Header Section */}
+      <div className="w-full flex flex-col lg:flex-row justify-between gap-4 mb-4">
+        <div className="w-20 h-20 lg:w-[10%] lg:h-[10%] mx-auto lg:mx-0">
           <Image
             alt="Logo"
             className="w-full h-full object-cover rounded-full"
             src={Logo}
           />
         </div>
-        <div className="flex gap-16 self-center">
-          <div className="flex gap-4">
-            <h3 className="font-semibold self-center text-2xl">Categoría:</h3>
+
+        {/* Controls Section - Responsive */}
+        <div className="flex flex-col lg:flex-row gap-4 lg:gap-16 self-center w-full lg:w-auto">
+          <div className="flex flex-col sm:flex-row gap-4 justify-center">
+            <h3 className="font-semibold self-center text-xl lg:text-2xl">
+              Categoría:
+            </h3>
             <CommonInput
               isReadOnly
               label="Categoria"
@@ -869,8 +886,9 @@ export default function KumitePage() {
               Cargar Excel
             </Button>
           </div>
-          <div className="flex items-center gap-4">
-            <h2 className="text-black dark:text-white font-semibold text-3xl">
+
+          <div className="flex flex-col sm:flex-row items-center gap-4 justify-center">
+            <h2 className="text-black dark:text-white font-semibold text-2xl lg:text-3xl">
               Area:
             </h2>
             {state.match.areaSeleccionada ? (
@@ -893,16 +911,21 @@ export default function KumitePage() {
               </Select>
             )}
           </div>
-          <div className="flex items-center gap-4">
+
+          <div className="flex items-center gap-4 justify-center">
             <ModalLlaves bracket={state.bracket} />
           </div>
         </div>
+
         <div className="grid grid-cols-2 gap-2 self-center">
           <MenuComponent handleOpenKumiteDisplay={handleOpenKumiteDisplay} />
         </div>
       </div>
-      <div className="w-full flex justify-between items-start gap-4">
-        <div className="w-3/5">
+
+      {/* Main Content Section - Responsive Layout */}
+      <div className="w-full flex flex-col xl:flex-row py-0 xl:py-20 overflow-hidden justify-between items-start gap-4 flex-1">
+        {/* AKA Panel - Responsive */}
+        <div className="w-full xl:w-2/5 order-1 xl:order-1">
           <PanelCard
             atenai={state.scores.aka.atenai}
             atenaiChui={state.scores.aka.atenaiChui}
@@ -963,23 +986,31 @@ export default function KumitePage() {
             onWazari={handleAkaWazari}
           />
         </div>
-        <div className="w-3/5 flex flex-col justify-center items-center gap-2">
-          <div className="flex gap-4 justify-center">
+
+        {/* Timer Section - Responsive */}
+        <div className="w-full xl:w-1/5 flex flex-col justify-center items-center gap-2 order-3 xl:order-2 min-h-[400px]">
+          <div className="flex gap-2 lg:gap-4 justify-center flex-wrap">
             <Button
               isDisabled={state.match.ganador !== null || isRunning}
               onPress={() => seleccionarTiempo(180)}
+              size="sm"
+              className="text-xs lg:text-sm"
             >
               3:00
             </Button>
             <Button
               isDisabled={state.match.ganador !== null || isRunning}
               onPress={() => seleccionarTiempo(120)}
+              size="sm"
+              className="text-xs lg:text-sm"
             >
               2:00
             </Button>
             <Button
               isDisabled={state.match.ganador !== null || isRunning}
               onPress={() => seleccionarTiempo(60)}
+              size="sm"
+              className="text-xs lg:text-sm"
             >
               1:00
             </Button>
@@ -993,18 +1024,22 @@ export default function KumitePage() {
             onTimeUpdate={updateSecondaryWindow}
           />
 
-          <div className="flex gap-4 justify-center">
+          <div className="flex gap-2 lg:gap-4 justify-center flex-wrap">
             <Button
               isDisabled={
                 state.match.ganador !== null || isRunning || selectedTime === 0
               }
               onPress={iniciarTemporizador}
+              size="sm"
+              className="text-xs lg:text-sm"
             >
               {isRunning ? "Reanudar" : "Iniciar"}
             </Button>
             <Button
               isDisabled={state.match.ganador !== null || !isRunning}
               onPress={detenerTemporizador}
+              size="sm"
+              className="text-xs lg:text-sm"
             >
               Detener
             </Button>
@@ -1013,33 +1048,39 @@ export default function KumitePage() {
                 state.match.ganador !== null || isRunning || selectedTime === 0
               }
               onPress={reiniciarTemporizador}
+              size="sm"
+              className="text-xs lg:text-sm"
             >
               Reiniciar
             </Button>
           </div>
+
           {state.match.ganador && (
-            <Button color="success" onPress={handleNextMatch}>
+            <Button color="success" onPress={handleNextMatch} size="sm">
               Siguiente Combate
             </Button>
           )}
+
           <div className="flex flex-col gap-2">
-            <div className="flex gap-4 justify-center">
+            <div className="flex gap-2 lg:gap-4 justify-center flex-wrap">
               <Button
                 isDisabled={state.match.ganador !== null}
                 size="sm"
                 variant="light"
                 onPress={sonarCampana}
+                className="text-xs"
               >
                 Campana 30 seg
               </Button>
               <Button size="sm" variant="light" onPress={resetAll}>
-                <MdLockReset className="text-2xl" />
+                <MdLockReset className="text-xl lg:text-2xl" />
               </Button>
               <Button
                 isDisabled={state.match.ganador !== null}
                 size="sm"
                 variant="light"
                 onPress={sonarCampanaFinal}
+                className="text-xs"
               >
                 Campana fin del tiempo
               </Button>
@@ -1054,7 +1095,9 @@ export default function KumitePage() {
             </audio>
           </div>
         </div>
-        <div className="w-3/5">
+
+        {/* SHIRO Panel - Responsive */}
+        <div className="w-full xl:w-2/5 order-2 xl:order-3">
           <PanelCard
             atenai={state.scores.shiro.atenai}
             atenaiChui={state.scores.shiro.atenaiChui}

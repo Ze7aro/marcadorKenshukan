@@ -14,7 +14,7 @@ import {
 import { RiInformationLine } from "react-icons/ri";
 
 import Logo from "@/assets/images/kenshukan-logo.png";
-import MY_LOGO from "@/assets/images/Logo-2.png";
+import MY_LOGO from "@/assets/images/Logo-3.png";
 import Kata from "@/assets/images/kata.png";
 import Kumite from "@/assets/images/kumite.png";
 import KataKanshi from "@/assets/images/kata-kanshi.png";
@@ -93,7 +93,7 @@ export default function IndexPage() {
       title: "¿Qué es esta aplicación?",
       content: (
         <div className="space-y-4">
-          <p className="text-gray-700">
+          <p className="text-gray-700 dark:text-white">
             Esta es una aplicación de marcador para competencias de Karate Do,
             específicamente diseñada para eventos de Kata y Kumite. Permite
             gestionar competidores, crear llaves de competencia y llevar el
@@ -106,7 +106,7 @@ export default function IndexPage() {
       title: "Funcionalidades principales",
       content: (
         <div className="space-y-4">
-          <ul className="list-disc list-inside space-y-1 text-gray-700">
+          <ul className="list-disc list-inside space-y-1 text-gray-700  dark:text-white">
             <li>
               <strong>Kata:</strong> Gestión de competidores, creación de llaves
               y evaluación de katas
@@ -170,14 +170,13 @@ export default function IndexPage() {
       content: <PDFReader fileUrl={Reglamento} />,
     },
     {
-      title: "Desarrollado por",
+      title: "",
       content: (
-        <div className="w-full bg-gray-400 rounded-lg flex items-center justify-center space-y-4">
-          <span className="bg-gradient-to-r from-white via-gray-300 to-blue-500 bg-clip-text text-transparent font-semibold italic">
-            Designed by
-          </span>
-          <Image alt="Logo" className="w-[50%] h-[60%]" src={MY_LOGO} />
-        </div>
+        <Image
+          alt="Logo"
+          className="w-full h-[40%] pt-10 object-contain"
+          src={MY_LOGO}
+        />
       ),
     },
   ];
@@ -236,7 +235,12 @@ export default function IndexPage() {
         </Button>
       </div>
 
-      <Modal isOpen={isOpen} size="2xl" onOpenChange={onOpenChange}>
+      <Modal
+        className="min-w-[500px] max-w-[500px] min-h-[700px] max-h-[700px]"
+        isOpen={isOpen}
+        size="2xl"
+        onOpenChange={onOpenChange}
+      >
         <ModalContent>
           {(onClose) => (
             <>
@@ -258,8 +262,9 @@ export default function IndexPage() {
                   {carouselContent[activePage - 1]?.content}
                 </div>
               </ModalBody>
-              <ModalFooter>
-                <div className="flex flex-col gap-2 self-center pr-36">
+              <ModalFooter className="flex gap-2 justify-between">
+                <div className="flex gap-2"></div>
+                <div className="flex flex-col gap-2 self-center">
                   <ul className="flex gap-2 items-center">
                     {range.map((page) => {
                       if (page === PaginationItemType.NEXT) {

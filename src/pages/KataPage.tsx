@@ -579,7 +579,7 @@ export default function KataPage() {
   };
 
   return (
-    <div className="w-full h-screen justify-between flex flex-col px-10 py-2 bg-gradient-to-b from-blue-500/30 to-blue-800/90">
+    <div className="w-full h-screen justify-around flex flex-col px-10 py-2 bg-gradient-to-b from-blue-500/30 to-blue-800/90">
       <div className="w-full flex justify-between">
         <div className="w-[10%] h-[10%]">
           <Image
@@ -638,14 +638,14 @@ export default function KataPage() {
       </div>
       <div className="w-full flex justify-center gap-6">
         <div className="w-2/3 flex gap-2 justify-center">
-          <h3 className="font-semibold text-xl">COMPETIDORES:</h3>
+          <h3 className="font-semibold text-xl pt-5">COMPETIDORES:</h3>
           <div className="min-w-[50%] overflow-auto">
             <Table
               fullWidth
               isCompact
               isHeaderSticky
               classNames={{
-                base: "max-h-[250px] overflowY-scroll",
+                base: "min-h-[250px] max-h-[250px] overflowY-scroll",
               }}
             >
               <TableHeader className="text-center">

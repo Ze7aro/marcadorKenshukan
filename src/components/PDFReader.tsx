@@ -20,7 +20,7 @@ export default function PDFViewer({ fileUrl }: { fileUrl: string }) {
         Ver en pantalla completa
       </Button>
 
-      <div ref={containerRef} className="w-full h-[350px] rounded-lg">
+      <div ref={containerRef} className="w-full h-[450px] rounded-lg">
         <iframe
           className="w-full h-full border-none rounded-lg"
           src={fileUrl}
