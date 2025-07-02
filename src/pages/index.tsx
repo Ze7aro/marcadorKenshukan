@@ -252,8 +252,9 @@ export default function IndexPage() {
       </div>
 
       <Modal
-        className="min-w-[500px] max-w-[500px] min-h-[700px] max-h-[700px]"
+        className="w-[95%] max-w-[500px] min-h-[400px] max-h-[90vh] mx-auto"
         isOpen={isOpen}
+        scrollBehavior="inside"
         size="2xl"
         onOpenChange={onOpenChange}
       >
@@ -261,40 +262,44 @@ export default function IndexPage() {
           {(onClose) => (
             <>
               <ModalHeader className="flex flex-col gap-1">
-                <div className="flex items-center gap-2">
+                <div className="flex items-center gap-2 flex-wrap">
                   <Image
                     alt="Logo"
-                    className="w-8 h-8 rounded-full"
+                    className="w-6 h-6 sm:w-8 sm:h-8 rounded-full flex-shrink-0"
                     src={Logo}
                   />
-                  <span>Marcador Kata Kumite - Kenshukan</span>
+                  <span className="text-sm sm:text-base font-medium">
+                    Marcador Kata Kumite - Kenshukan
+                  </span>
                 </div>
               </ModalHeader>
               <ModalBody>
-                <div className="min-h-[350px]">
-                  <h3 className="text-lg font-semibold text-blue-600 mb-4">
+                <div className="min-h-[200px] sm:min-h-[350px]">
+                  <h3 className="text-base sm:text-lg font-semibold text-blue-600 mb-3 sm:mb-4">
                     {carouselContent[activePage - 1]?.title}
                   </h3>
-                  {carouselContent[activePage - 1]?.content}
+                  <div className="text-sm sm:text-base">
+                    {carouselContent[activePage - 1]?.content}
+                  </div>
                 </div>
               </ModalBody>
-              <ModalFooter className="flex gap-2 justify-between">
+              <ModalFooter className="flex gap-2 justify-between flex-wrap">
                 <div className="flex gap-2" />
                 <div className="flex flex-col gap-2 self-center">
-                  <ul className="flex gap-2 items-center">
+                  <ul className="flex gap-1 sm:gap-2 items-center">
                     {range.map((page) => {
                       if (page === PaginationItemType.NEXT) {
                         return (
                           <li
                             key={page}
                             aria-label="next page"
-                            className="w-4 h-4"
+                            className="w-3 h-3 sm:w-4 sm:h-4"
                           >
                             <button
-                              className="w-full h-full bg-default-200 rounded-full"
+                              className="w-full h-full bg-default-200 rounded-full flex items-center justify-center"
                               onClick={handleNext}
                             >
-                              <ChevronIcon className="rotate-180" />
+                              <ChevronIcon className="rotate-180 w-2 h-2 sm:w-3 sm:h-3" />
                             </button>
                           </li>
                         );
@@ -305,13 +310,13 @@ export default function IndexPage() {
                           <li
                             key={page}
                             aria-label="previous page"
-                            className="w-4 h-4"
+                            className="w-3 h-3 sm:w-4 sm:h-4"
                           >
                             <button
-                              className="w-full h-full bg-default-200 rounded-full"
+                              className="w-full h-full bg-default-200 rounded-full flex items-center justify-center"
                               onClick={handlePrevious}
                             >
-                              <ChevronIcon />
+                              <ChevronIcon className="w-2 h-2 sm:w-3 sm:h-3" />
                             </button>
                           </li>
                         );
@@ -319,7 +324,10 @@ export default function IndexPage() {
 
                       if (page === PaginationItemType.DOTS) {
                         return (
-                          <li key={page} className="w-4 h-4 ">
+                          <li
+                            key={page}
+                            className="w-3 h-3 sm:w-4 sm:h-4 flex items-center justify-center text-xs sm:text-sm"
+                          >
                             ...
                           </li>
                         );
@@ -329,7 +337,7 @@ export default function IndexPage() {
                         <li
                           key={page}
                           aria-label={`page ${page}`}
-                          className="w-4 h-4"
+                          className="w-3 h-3 sm:w-4 sm:h-4"
                         >
                           <button
                             className={`w-full h-full bg-default-300 rounded-full ${
@@ -342,7 +350,12 @@ export default function IndexPage() {
                     })}
                   </ul>
                 </div>
-                <Button color="primary" onPress={onClose}>
+                <Button
+                  color="primary"
+                  onPress={onClose}
+                  size="sm"
+                  className="text-xs sm:text-sm"
+                >
                   Entendido
                 </Button>
               </ModalFooter>
