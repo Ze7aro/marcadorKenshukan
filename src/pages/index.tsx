@@ -26,7 +26,7 @@ import Reglamento from "@/assets/World Union of Karate TRADUCCION  Final (1).pdf
 import PDFReader from "@/components/PDFReader";
 
 const styleButton =
-  "w-[20%] h-[80%] cursor-pointer font-bold text-center shadow-md hover:shadow-lg italic flex flex-col hover:text-white";
+  "w-[45%] sm:w-[35%] md:w-[30%] lg:w-[25%] xl:w-[20%] h-[80%] cursor-pointer font-bold text-center shadow-md hover:shadow-lg italic flex flex-col hover:text-white";
 
 export const ChevronIcon = (props: React.SVGProps<SVGSVGElement>) => {
   return (
@@ -196,41 +196,57 @@ export default function IndexPage() {
       </div>
       <div className="w-full h-full flex items-center relative justify-center">
         <Button
-          className={`${styleButton} pl-14 items-start rounded-l-full bg-gradient-to-r from-zinc-100 to-blue-600 hover:bg-gradient-to-r hover:from-zinc-200 hover:to-blue-700`}
+          className={`${styleButton} pl-4 sm:pl-8 md:pl-10 lg:pl-12 xl:pl-14 items-start rounded-l-full bg-gradient-to-r from-zinc-100 to-blue-600 hover:bg-gradient-to-r hover:from-zinc-200 hover:to-blue-700`}
           onPress={handleKataClick}
         >
           <Image
             isZoomed
             alt="Kata"
-            className="size-40"
+            className="w-20 sm:w-28 md:w-32 lg:w-36 xl:w-40"
             classNames={{ img: "rounded-lg fill-white stroke-white" }}
             src={Kata}
           />
           <div className="flex gap-1">
-            <Image alt="Kata-Kanshi" className="size-7" src={KataKanshi} />
-            <h2 className="text-xl font-bold">Kata</h2>
+            <Image
+              alt="Kata-Kanshi"
+              className="size-5 sm:size-6 md:size-7"
+              src={KataKanshi}
+            />
+            <h2 className="text-sm sm:text-base md:text-lg lg:text-xl font-bold">
+              Kata
+            </h2>
           </div>
         </Button>
         <div
-          className={`pointer-events-none w-[10%]  absolute ${isOpen ? "z-0" : "z-[9999]"}`}
+          className={`pointer-events-none w-[15%] sm:w-[12%] md:w-[10%] absolute ${isOpen ? "z-0" : "z-[9999]"}`}
         >
           <Image alt="Logo" className="rounded-full" src={Logo} />
         </div>
         <Button
-          className={`${styleButton} pr-14 items-end rounded-r-full bg-gradient-to-r from-blue-600 to-zinc-300 hover:bg-gradient-to-r hover:from-blue-700 hover:to-zinc-200`}
+          className={`${styleButton} pr-4 sm:pr-8 md:pr-10 lg:pr-12 xl:pr-14 items-end rounded-r-full bg-gradient-to-r from-blue-600 to-zinc-300 hover:bg-gradient-to-r hover:from-blue-700 hover:to-zinc-200`}
           onPress={handleKumiteClick}
         >
           <Image
             isZoomed
             alt="Kumite"
-            className="size-40"
+            className="w-20 sm:w-28 md:w-32 lg:w-36 xl:w-40"
             classNames={{ img: "rounded-lg fill-white stroke-white" }}
             src={Kumite}
           />
           <div className="flex">
-            <h2 className="text-xl font-bold mr-1">Kumite</h2>
-            <Image alt="Kumi-Kanshi" className="size-7" src={KumiKanshi} />
-            <Image alt="Te-Kanshi" className="size-7" src={TeKanshi} />
+            <h2 className="text-sm sm:text-base md:text-lg lg:text-xl font-bold mr-1">
+              Kumite
+            </h2>
+            <Image
+              alt="Kumi-Kanshi"
+              className="size-5 sm:size-6 md:size-7"
+              src={KumiKanshi}
+            />
+            <Image
+              alt="Te-Kanshi"
+              className="size-5 sm:size-6 md:size-7"
+              src={TeKanshi}
+            />
           </div>
         </Button>
       </div>
@@ -263,7 +279,7 @@ export default function IndexPage() {
                 </div>
               </ModalBody>
               <ModalFooter className="flex gap-2 justify-between">
-                <div className="flex gap-2"></div>
+                <div className="flex gap-2" />
                 <div className="flex flex-col gap-2 self-center">
                   <ul className="flex gap-2 items-center">
                     {range.map((page) => {

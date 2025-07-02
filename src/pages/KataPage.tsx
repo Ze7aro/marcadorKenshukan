@@ -579,18 +579,20 @@ export default function KataPage() {
   };
 
   return (
-    <div className="w-full h-screen justify-around flex flex-col px-10 py-2 bg-gradient-to-b from-blue-500/30 to-blue-800/90">
-      <div className="w-full flex justify-between">
-        <div className="w-[10%] h-[10%]">
+    <div className="w-full min-h-screen justify-around flex flex-col px-2 sm:px-4 md:px-6 lg:px-10 py-2 bg-gradient-to-b from-blue-500/30 to-blue-800/90">
+      <div className="w-full flex flex-col lg:flex-row justify-between gap-4">
+        <div className="w-16 h-16 sm:w-20 sm:h-20 md:w-24 md:h-24 lg:w-[10%] lg:h-[10%] self-center lg:self-start">
           <Image
             alt="Logo"
             className="w-full h-full object-cover rounded-full"
             src={Logo}
           />
         </div>
-        <div className="flex gap-16 self-center">
-          <div className="flex gap-4">
-            <h3 className="font-semibold self-center  text-2xl">Categoría:</h3>
+        <div className="w-full flex flex-row lg:flex-row justify-center gap-4 lg:gap-16 self-center">
+          <div className="flex flex-col sm:flex-row gap-2 sm:gap-4 items-center">
+            <h3 className="font-semibold self-center text-lg sm:text-xl lg:text-2xl">
+              Categoría:
+            </h3>
             <CommonInput isReadOnly label="Categoria" value={categoria} />
             <input
               accept=".xlsx,.xls"
@@ -600,15 +602,15 @@ export default function KataPage() {
               onChange={handleFileUpload}
             />
             <Button
-              className="bg-green-700 text-white self-center"
+              className="bg-green-700 text-white self-center text-sm sm:text-base"
               isDisabled={!areaSeleccionada}
               onPress={() => document?.getElementById("excel-upload")?.click()}
             >
               Cargar Excel
             </Button>
           </div>
-          <div className="flex items-center gap-4">
-            <h2 className="text-black dark:text-white font-semibold text-3xl">
+          <div className="flex flex-col sm:flex-row items-center gap-2 sm:gap-4">
+            <h2 className="text-black dark:text-white font-semibold text-xl sm:text-2xl lg:text-3xl">
               Area:
             </h2>
             {areaSeleccionada ? (
@@ -631,21 +633,23 @@ export default function KataPage() {
               </Select>
             )}
           </div>
-        </div>
-        <div className="grid grid-cols-2 gap-2 self-center">
-          <MenuComponent handleOpenKataDisplay={handleOpenKataDisplay} />
+          <div className="grid grid-cols-2 gap-2 self-center">
+            <MenuComponent handleOpenKataDisplay={handleOpenKataDisplay} />
+          </div>
         </div>
       </div>
-      <div className="w-full flex justify-center gap-6">
-        <div className="w-2/3 flex gap-2 justify-center">
-          <h3 className="font-semibold text-xl pt-5">COMPETIDORES:</h3>
-          <div className="min-w-[50%] overflow-auto">
+      <div className="w-full flex flex-col lg:flex-row justify-center gap-4 lg:gap-6">
+        <div className="w-full lg:w-2/3 flex flex-col sm:flex-row gap-2 justify-center">
+          <h3 className="font-semibold text-lg sm:text-xl pt-2 sm:pt-5 text-center sm:text-left">
+            COMPETIDORES:
+          </h3>
+          <div className="w-full sm:min-w-[50%] overflow-auto">
             <Table
               fullWidth
               isCompact
               isHeaderSticky
               classNames={{
-                base: "min-h-[250px] max-h-[250px] overflowY-scroll",
+                base: "min-h-[200px] sm:min-h-[250px] max-h-[200px] sm:max-h-[250px] overflowY-scroll text-xs sm:text-sm",
               }}
             >
               <TableHeader className="text-center">
@@ -697,12 +701,13 @@ export default function KataPage() {
             <SelectItem key={7}>7</SelectItem>
             <SelectItem key={8}>8</SelectItem>
           </Select>
-          <div className="col-span-2 text-xs text-gray-600 text-center">
+          <div className="col-span-2 text-xs text-gray-600 dark:text-white text-center">
             {base === 6 && "Rango permitido: 5.0 - 7.0"}
             {base === 7 && "Rango permitido: 6.0 - 8.0"}
             {base === 8 && "Rango permitido: 7.0 - 9.0"}
           </div>
           <Button
+            className="text-xs sm:text-sm"
             size="md"
             onPress={() => {
               setJudges(Array(3).fill(""));
@@ -712,6 +717,7 @@ export default function KataPage() {
             3 Jueces
           </Button>
           <Button
+            className="text-xs sm:text-sm"
             size="md"
             onPress={() => {
               setJudges(Array(5).fill(""));
@@ -721,8 +727,8 @@ export default function KataPage() {
             5 Jueces
           </Button>
           <Button
-            className="bg-green-500 text-white font-semibold hover:bg-green-400 rounded-md col-span-2"
-            size="md"
+            className="bg-green-500 text-white font-semibold hover:bg-green-400 rounded-md col-span-2 text-xs sm:text-sm"
+            size="sm"
             onPress={agregarCompetidor}
           >
             + Agregar competidor
@@ -730,43 +736,47 @@ export default function KataPage() {
         </div>
       </div>
 
-      <div className="flex justify-between">
-        {judges.map((judge, index) => (
-          <Input
-            key={index}
-            isClearable
-            className={`w-auto`}
-            endContent={<MdCancel />}
-            errorMessage={
-              <p className="text-shadow-lg/30 font-semibold">
-                Puntaje requerido
-              </p>
-            }
-            isInvalid={submitted && !judge}
-            label={`JUEZ ${index === 0 ? "PRINCIPAL" : index}`}
-            labelPlacement="outside"
-            maxLength={3}
-            placeholder={`JUEZ ${index === 0 ? "PRINCIPAL" : index}`}
-            size="lg"
-            tabIndex={index + 1}
-            type="text"
-            value={judge}
-            variant="faded"
-            onBlur={() => handleBlur(index)}
-            onChange={(e) => handleChange(index, e)}
-            onClear={() => handleClear(index)}
-          />
-        ))}
-        <div className="flex flex-col gap-4">
+      <div className="flex flex-col lg:flex-row justify-between gap-4 sm:pt-8">
+        <div className="w-full grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-2 justify-between lg:gap-4">
+          {judges.map((judge, index) => (
+            <Input
+              key={index}
+              isClearable
+              className={`w-full`}
+              endContent={<MdCancel />}
+              errorMessage={
+                <p className="text-shadow-lg/30 font-semibold text-xs">
+                  Puntaje requerido
+                </p>
+              }
+              isInvalid={submitted && !judge}
+              label={`JUEZ ${index === 0 ? "PRINCIPAL" : index}`}
+              labelPlacement="outside"
+              maxLength={3}
+              placeholder={`JUEZ ${index === 0 ? "PRINCIPAL" : index}`}
+              size="md"
+              tabIndex={index + 1}
+              type="text"
+              value={judge}
+              variant="faded"
+              onBlur={() => handleBlur(index)}
+              onChange={(e) => handleChange(index, e)}
+              onClear={() => handleClear(index)}
+            />
+          ))}
+        </div>
+        <div className="flex flex-row lg:flex-col gap-2 lg:gap-4 justify-center">
           <Button
-            className="bg-gray-500 text-white font-semibold hover:bg-gray-400 rounded-md"
+            className="bg-gray-500 text-white font-semibold hover:bg-gray-400 rounded-md text-xs sm:text-sm"
+            size="sm"
             tabIndex={judges.length + 1}
             onPress={calc}
           >
             Calcular
           </Button>
           <Button
-            className="bg-red-500 text-white font-semibold hover:bg-red-400"
+            className="bg-red-500 text-white font-semibold hover:bg-red-400 text-xs sm:text-sm"
+            size="sm"
             tabIndex={judges.length + 2}
             onPress={handleKiken}
           >
@@ -776,11 +786,11 @@ export default function KataPage() {
       </div>
 
       <div
-        className={`flex ${judges.length === 5 ? "justify-between" : "justify-end"} ${judges.length === 5 ? "gap-0" : "gap-96"}`}
+        className={`flex flex-col lg:flex-row ${judges.length === 5 ? "justify-between" : "justify-end"} gap-4`}
       >
         {judges.length !== 3 && (
           <Input
-            className="w-auto h-5 rounded-md text-7xl"
+            className="w-full lg:w-auto h-12 lg:h-5 rounded-md text-2xl lg:text-7xl"
             label="Menor puntaje:"
             labelPlacement="outside"
             placeholder="Menor"
@@ -790,7 +800,7 @@ export default function KataPage() {
         )}
         {judges.length !== 3 && (
           <Input
-            className="w-auto h-5 rounded-md text-7xl"
+            className="w-full lg:w-auto h-12 lg:h-5 rounded-md text-2xl lg:text-7xl"
             label="Mayor puntaje:"
             labelPlacement="outside"
             placeholder="Mayor"
@@ -799,22 +809,29 @@ export default function KataPage() {
           />
         )}
         <Input
-          className="w-auto h-5 rounded-md text-7xl justify-end"
+          className="w-full lg:w-auto h-12 lg:h-5 rounded-md text-2xl lg:text-7xl justify-end"
           label="Puntaje Final:"
           labelPlacement="outside"
           placeholder="Total"
           size="lg"
           value={score}
         />
-        <div className="grid grid-cols-2 gap-4">
-          <Button onPress={clearAll}>Limpiar</Button>
+        <div className="grid grid-cols-2 gap-2 lg:gap-4">
+          <Button size="sm" onPress={clearAll}>
+            Limpiar
+          </Button>
           <Button
-            className="bg-blue-500 text-white font-semibold hover:bg-blue-400"
+            className="bg-blue-500 text-white font-semibold hover:bg-blue-400 text-xs sm:text-sm"
+            size="sm"
             onPress={handleSave}
           >
             Guardar
           </Button>
-          <Button className="col-span-2" onPress={resetAll}>
+          <Button
+            className="col-span-2 text-xs sm:text-sm"
+            size="sm"
+            onPress={resetAll}
+          >
             Reiniciar Todo
           </Button>
         </div>

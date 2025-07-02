@@ -9,7 +9,7 @@ import {
 import { RiMenuUnfold4Fill } from "react-icons/ri";
 import { useNavigate, useLocation } from "react-router-dom";
 
-import { ThemeSwitch } from "./theme-switch";
+/* import { ThemeSwitch } from "./theme-switch"; */
 
 interface MenuComponentProps {
   handleOpenKumiteDisplay?: () => void;
@@ -59,7 +59,7 @@ export const MenuComponent = ({
             Inicio
           </DropdownItem>
         </DropdownSection>
-        <DropdownSection showDivider aria-label="Theme">
+        {/*  <DropdownSection showDivider aria-label="Theme">
           <DropdownItem
             key="theme"
             isReadOnly
@@ -68,7 +68,7 @@ export const MenuComponent = ({
           >
             <ThemeSwitch />
           </DropdownItem>
-        </DropdownSection>
+        </DropdownSection> */}
       </DropdownMenu>
     </Dropdown>
   );
