@@ -14,11 +14,17 @@ import { useNavigate, useLocation } from "react-router-dom";
 interface MenuComponentProps {
   handleOpenKumiteDisplay?: () => void;
   handleOpenKataDisplay?: () => void;
+  handleOpenConfig?: () => void;
+  onExportExcel?: () => void;
+  onExportPDF?: () => void;
 }
 
 export const MenuComponent = ({
   handleOpenKumiteDisplay,
   handleOpenKataDisplay,
+  handleOpenConfig,
+  onExportExcel,
+  onExportPDF,
 }: MenuComponentProps) => {
   const navigate = useNavigate();
   const { pathname: href } = useLocation();
@@ -41,6 +47,19 @@ export const MenuComponent = ({
             {href === "/kata" ? "Kumite" : href === "/kumite" ? "Kata" : ""}
           </DropdownItem>
         </DropdownSection>
+        <DropdownSection showDivider aria-label="Export">
+          <DropdownItem key="excel" onPress={onExportExcel}>
+            Exportar Excel
+          </DropdownItem>
+          <DropdownItem key="pdf" onPress={onExportPDF}>
+            Exportar PDF
+          </DropdownItem>
+        </DropdownSection>
+        <DropdownSection showDivider aria-label="Config">
+          <DropdownItem key="settings" onPress={handleOpenConfig}>
+            Configuración
+          </DropdownItem>
+        </DropdownSection>
         <DropdownSection showDivider aria-label="Section Action">
           <DropdownItem
             key="kataWindow"
@@ -50,7 +69,7 @@ export const MenuComponent = ({
                 ? handleOpenKumiteDisplay
                 : href === "/kata"
                   ? handleOpenKataDisplay
-                  : () => {}
+                  : () => { }
             }
           >
             Abrir Ventana

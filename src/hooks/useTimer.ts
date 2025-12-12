@@ -69,7 +69,7 @@ export function useTimer({
         intervalRef.current = null;
       }
     };
-  }, [isRunning, time]);
+  }, [isRunning]);
 
   // Función para iniciar el temporizador
   const start = useCallback(() => {
@@ -90,7 +90,7 @@ export function useTimer({
       setTime(newTime ?? initialTime);
       has30SecWarningFired.current = false;
     },
-    [initialTime],
+    [initialTime]
   );
 
   // Función para establecer un tiempo específico

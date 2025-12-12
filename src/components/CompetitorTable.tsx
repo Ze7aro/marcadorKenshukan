@@ -49,52 +49,52 @@ export const CompetitorTable = React.memo<CompetitorTableProps>(
           <TableBody emptyContent="No hay competidores cargados.">
             {isLoading
               ? Array.from({ length: 5 }).map((_, idx) => (
-                <TableRow key={`skeleton-${idx}`}>
-                  <TableCell>
-                    <Skeleton className="rounded-lg">
-                      <div className="h-6 w-3/4 rounded-lg bg-default-200"></div>
-                    </Skeleton>
-                  </TableCell>
-                  <TableCell>
-                    <Skeleton className="rounded-lg">
-                      <div className="h-6 w-1/2 rounded-lg bg-default-200"></div>
-                    </Skeleton>
-                  </TableCell>
-                  <TableCell>
-                    <Skeleton className="rounded-lg">
-                      <div className="h-6 w-1/2 rounded-lg bg-default-200"></div>
-                    </Skeleton>
-                  </TableCell>
-                  <TableCell>
-                    <Skeleton className="rounded-lg">
-                      <div className="h-6 w-1/2 rounded-lg bg-default-200"></div>
-                    </Skeleton>
-                  </TableCell>
-                </TableRow>
-              ))
+                  <TableRow key={`skeleton-${idx}`}>
+                    <TableCell>
+                      <Skeleton className="rounded-lg">
+                        <div className="h-6 w-3/4 rounded-lg bg-default-200" />
+                      </Skeleton>
+                    </TableCell>
+                    <TableCell>
+                      <Skeleton className="rounded-lg">
+                        <div className="h-6 w-1/2 rounded-lg bg-default-200" />
+                      </Skeleton>
+                    </TableCell>
+                    <TableCell>
+                      <Skeleton className="rounded-lg">
+                        <div className="h-6 w-1/2 rounded-lg bg-default-200" />
+                      </Skeleton>
+                    </TableCell>
+                    <TableCell>
+                      <Skeleton className="rounded-lg">
+                        <div className="h-6 w-1/2 rounded-lg bg-default-200" />
+                      </Skeleton>
+                    </TableCell>
+                  </TableRow>
+                ))
               : competidores.map((competidor) => (
-                <TableRow
-                  key={competidor.id}
-                  className={`${competidor.PuntajeFinal !== null ? "bg-blue-100" : ""} text-center`}
-                >
-                  <TableCell>{competidor.Nombre}</TableCell>
-                  <TableCell className="text-center">
-                    {competidor.Edad}
-                  </TableCell>
-                  <TableCell className="text-center">
-                    {competidor.Categoria}
-                  </TableCell>
-                  <TableCell className="text-center">
-                    {competidor.Kiken
-                      ? "KIKEN"
-                      : competidor.PuntajeFinal
-                        ? (
-                          Math.round(competidor.PuntajeFinal * 10) / 10
-                        ).toFixed(1)
-                        : "-"}
-                  </TableCell>
-                </TableRow>
-              ))}
+                  <TableRow
+                    key={competidor.id}
+                    className={`${competidor.PuntajeFinal !== null ? "bg-blue-100" : ""} text-center`}
+                  >
+                    <TableCell>{competidor.Nombre}</TableCell>
+                    <TableCell className="text-center">
+                      {competidor.Edad}
+                    </TableCell>
+                    <TableCell className="text-center">
+                      {competidor.Categoria}
+                    </TableCell>
+                    <TableCell className="text-center">
+                      {competidor.Kiken
+                        ? "KIKEN"
+                        : competidor.PuntajeFinal
+                          ? (
+                              Math.round(competidor.PuntajeFinal * 10) / 10
+                            ).toFixed(1)
+                          : "-"}
+                    </TableCell>
+                  </TableRow>
+                ))}
           </TableBody>
         </Table>
       </div>

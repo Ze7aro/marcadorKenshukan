@@ -9,7 +9,6 @@ import Logo from "@/assets/images/kenshukan-logo.png";
 import { CommonInput } from "@/components/CommonInput";
 import { MenuComponent } from "@/components/MenuComponent";
 import { showToast } from "@/utils/toast";
-
 import { JudgeScoreInputs } from "@/components/JudgeScoreInputs";
 import { CompetitorTable } from "@/components/CompetitorTable";
 import { AreaSelector } from "@/components/AreaSelector";
@@ -141,9 +140,9 @@ function KataPageContent() {
     };
 
     window.addEventListener("keydown", handleKeyDown);
+
     return () => window.removeEventListener("keydown", handleKeyDown);
   }, [saveScore]);
-
 
   const agregarCompetidor = () => {
     dispatch({ type: "SET_SHOW_AGREGAR_DIALOG", payload: true });
@@ -156,6 +155,7 @@ function KataPageContent() {
       !nuevoCompetidor.Categoria
     ) {
       showToast.error("Por favor complete todos los campos");
+
       return;
     }
 
@@ -232,7 +232,10 @@ function KataPageContent() {
 
             if (categoriaCell) {
               dispatch({ type: "SET_CATEGORIA", payload: categoriaCell.v });
-              dispatch({ type: "SET_TITULO_CATEGORIA", payload: categoriaCell.v });
+              dispatch({
+                type: "SET_TITULO_CATEGORIA",
+                payload: categoriaCell.v,
+              });
             }
 
             const competidoresData: Competidor[] = [];
@@ -493,7 +496,9 @@ function KataPageContent() {
       />
       <AgregarCompetidor
         showDialog={showAgregarDialog}
-        onClose={() => dispatch({ type: "SET_SHOW_AGREGAR_DIALOG", payload: false })}
+        onClose={() =>
+          dispatch({ type: "SET_SHOW_AGREGAR_DIALOG", payload: false })
+        }
         onSubmit={handleAgregarSubmit}
       />
     </AnimatedPage>

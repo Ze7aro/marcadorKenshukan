@@ -84,7 +84,9 @@ export const TimerControls = React.memo<TimerControlsProps>(
         {/* Control Buttons */}
         <div className="flex gap-2 lg:gap-4 justify-center flex-wrap">
           <Button
-            aria-label={isRunning ? "Pausar temporizador" : "Iniciar temporizador"}
+            aria-label={
+              isRunning ? "Pausar temporizador" : "Iniciar temporizador"
+            }
             className="text-xs lg:text-sm"
             isDisabled={hasWinner || isRunning || selectedTime === 0}
             size="sm"

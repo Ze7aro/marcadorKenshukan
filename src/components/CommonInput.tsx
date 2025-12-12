@@ -14,7 +14,7 @@ export const CommonInput: FC<CommonInputProps> = ({
 }) => {
   return (
     <Input
-      className="w-36 md:w-28 xl:w-auto rounded-md px-2 py-1 text-center text-2xl border-2 border-gray-400"
+      className="w-36 md:w-28 xl:w-auto rounded-md px-2 py-1 text-center text-2xl"
       classNames={{
         input: "text-center text-2xl font-bold",
         inputWrapper: "h-24",
