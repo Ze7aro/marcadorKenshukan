@@ -58,6 +58,7 @@ export const ResultadosFinales: FC<ResultadosFinalesProps> = ({
     if (a.Kiken && !b.Kiken) return 1;
     if (!a.Kiken && b.Kiken) return -1;
     if (a.Kiken && b.Kiken) return 0;
+
     return (b.PuntajeFinal || 0) - (a.PuntajeFinal || 0);
   });
 

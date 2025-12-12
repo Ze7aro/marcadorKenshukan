@@ -6,9 +6,9 @@ import tsconfigPaths from "vite-tsconfig-paths";
 export default defineConfig({
   plugins: [react(), tsconfigPaths()],
   optimizeDeps: {
-    include: ['react-pdf'],
+    include: ["react-pdf"],
   },
   define: {
-    global: 'globalThis',
+    global: "globalThis",
   },
 });

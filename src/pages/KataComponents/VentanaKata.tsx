@@ -22,9 +22,6 @@ interface Competidor {
   Kiken?: boolean;
 }
 
-// Crear el canal de broadcast fuera del componente para que sea único por pestaña
-const kataChannel = new BroadcastChannel("kata-channel");
-
 const KataDisplay = () => {
   const [data, setData] = useState<{
     competidor: string;
@@ -44,8 +41,10 @@ const KataDisplay = () => {
     competidores: [],
   });
 
-  // Escuchar mensajes del canal y actualizar el estado
+  // Escuchar mensajes del canal usando BroadcastChannel API
   useEffect(() => {
+    const kataChannel = new BroadcastChannel("kata-channel");
+
     kataChannel.onmessage = (event) => {
       if (event.data) {
         setData(event.data);
@@ -53,7 +52,7 @@ const KataDisplay = () => {
     };
 
     return () => {
-      kataChannel.onmessage = null;
+      kataChannel.close();
     };
   }, []);
 

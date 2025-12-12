@@ -351,10 +351,10 @@ export default function IndexPage() {
                   </ul>
                 </div>
                 <Button
-                  color="primary"
-                  onPress={onClose}
-                  size="sm"
                   className="text-xs sm:text-sm"
+                  color="primary"
+                  size="sm"
+                  onPress={onClose}
                 >
                   Entendido
                 </Button>

@@ -29,7 +29,7 @@ export default function ModalLlaves({ bracket }: ModalLlavesProps) {
           <Image alt="Llaves" className="rounded-none -mr-3" src={Llaves} />
         </Button>
       </Tooltip>
-      <Modal size="5xl" isOpen={isOpen} onOpenChange={onOpenChange}>
+      <Modal isOpen={isOpen} size="5xl" onOpenChange={onOpenChange}>
         <ModalContent>
           {(onClose) => (
             <>

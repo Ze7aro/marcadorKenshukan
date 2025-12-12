@@ -1,7 +1,6 @@
-import { useState, useEffect, useRef, useReducer } from "react";
-import { Button, Input, Select, SelectItem, Image } from "@heroui/react";
+import { useRef, useEffect, useState } from "react";
+import { Button, Image } from "@heroui/react";
 import { MdLockReset } from "react-icons/md";
-import * as XLSX from "xlsx";
 
 import { PanelCard } from "./KumiteComponents/PanelCard";
 import ModalLlaves from "./KumiteComponents/ModalLlaves";
@@ -15,287 +14,66 @@ import ShiroBelt from "@/assets/images/shiroStill.gif";
 import AkaBelt from "@/assets/images/akaStill.gif";
 import { MenuComponent } from "@/components/MenuComponent";
 import { CommonInput } from "@/components/CommonInput";
-import { Competidor } from "@/types";
-import { generateBracket } from "@/utils/bracketUtils";
 import { useBreakpoint } from "@/config/useBreakpoint";
+import { AreaSelector } from "@/components/AreaSelector";
+import { ExcelUploader } from "@/components/ExcelUploader";
+import { TimerControls } from "@/components/TimerControls";
+import { AnimatedPage } from "@/components/AnimatedPage";
+import { KumiteProvider, useKumite } from "@/context/KumiteContext";
 
-const kumiteChannel = new BroadcastChannel("kumite-channel");
+function KumitePageContent() {
+  const {
+    state,
+    dispatch,
+    startTimer,
+    stopTimer,
+    resetTimer,
+    selectTime,
+    handleFileUpload,
+    updateScore,
+    setWinner,
+    nextMatch,
+    resetAll,
+    setArea,
+    closeWinnerModal,
+    broadcastData
+  } = useKumite();
 
-// Función para crear bracket por defecto
-const createDefaultBracket = () => {
-  const defaultCompetitors: Competidor[] = [
-    { id: 1, Nombre: "AKA", Edad: 0 },
-    { id: 2, Nombre: "SHIRO", Edad: 0 },
-  ];
+  const { timer, scores, match, bracket } = state;
 
-  return generateBracket(defaultCompetitors);
-};
-
-const initialState = {
-  timer: {
-    tiempoRestante: 180,
-    tiempoInicial: 180,
-    temporizadorIniciado: false,
-    timerStarted: false,
-    timerPaused: false,
-    selectedTime: 180,
-  },
-  scores: {
-    aka: {
-      wazari: 0,
-      ippon: 0,
-      kinshi: false,
-      kinshiNi: false,
-      kinshiChui: false,
-      kinshiHansoku: false,
-      atenai: false,
-      atenaiChui: false,
-      atenaiHansoku: false,
-      shikaku: false,
-      kiken: false,
-      nombre: "AKA",
-    },
-    shiro: {
-      wazari: 0,
-      ippon: 0,
-      kinshi: false,
-      kinshiNi: false,
-      kinshiChui: false,
-      kinshiHansoku: false,
-      atenai: false,
-      atenaiChui: false,
-      atenaiHansoku: false,
-      shikaku: false,
-      kiken: false,
-      nombre: "SHIRO",
-    },
-  },
-  match: {
-    ganador: null,
-    ganadorNombre: "",
-    showGanador: false,
-    categoria: "",
-    area: "",
-    areaSeleccionada: false,
-  },
-  bracket: createDefaultBracket(), // Inicializar con bracket por defecto
-  currentRoundIndex: 0,
-  currentMatchIndex: 0,
-};
-
-function reducer(state: any, action: any) {
-  switch (action.type) {
-    case "SET_TIMER":
-      return {
-        ...state,
-        timer: { ...state.timer, ...action.payload },
-      };
-    case "UPDATE_SCORE":
-      return {
-        ...state,
-        scores: {
-          ...state.scores,
-          [action.competitor]: {
-            ...state.scores[action.competitor],
-            ...action.payload,
-          },
-        },
-      };
-    case "UPDATE_MATCH":
-      return {
-        ...state,
-        match: { ...state.match, ...action.payload },
-      };
-    case "SET_BRACKET":
-      return { ...state, bracket: action.payload };
-    case "INIT_DEFAULT_BRACKET":
-      return {
-        ...state,
-        bracket: createDefaultBracket(),
-        currentRoundIndex: 0,
-        currentMatchIndex: 0,
-        match: {
-          ...state.match,
-          ganador: null,
-          showGanador: false,
-          ganadorNombre: "",
-        },
-        scores: initialState.scores,
-      };
-    case "NEXT_MATCH":
-      return {
-        ...state,
-        currentMatchIndex: action.payload.currentMatchIndex,
-        currentRoundIndex: action.payload.currentRoundIndex,
-        match: {
-          ...state.match,
-          ganador: null,
-          showGanador: false,
-          ganadorNombre: "",
-        },
-        scores: initialState.scores,
-      };
-    case "RESET_ALL":
-      return initialState;
-    default:
-      return state;
-  }
-}
-
-export default function KumitePage() {
-  const [state, dispatch] = useReducer(reducer, initialState);
   const audioRef = useRef<HTMLAudioElement>(null);
   const audioFinalRef = useRef<HTMLAudioElement>(null);
-  const [isRunning, setIsRunning] = useState(false);
-  const [selectedTime, setSelectedTime] = useState(180);
-  const [currentTime, setCurrentTime] = useState(0);
+
+  // Local UI state for resetKey if needed, but we try to rely on timer state
   const [resetKey, setResetKey] = useState(0);
+
   const breakpoints = useBreakpoint();
-  const items = [
-    { key: "1", label: "Area 1" },
-    { key: "2", label: "Area 2" },
-    { key: "3", label: "Area 3" },
-    { key: "4", label: "Area 4" },
-    { key: "5", label: "Area 5" },
-  ];
-  const isSm =
-    breakpoints === "sm" || breakpoints === "md" || breakpoints === "lg";
+  const isSm = breakpoints === "sm" || breakpoints === "md" || breakpoints === "lg";
   const isLgUp = ["xl", "2xl"].includes(breakpoints);
 
-  // Efecto para manejar la barra espaciadora
+  // Sync resetKey when timer is reset (optional, but helps if Temporizador needs it)
   useEffect(() => {
-    const handleKeyPress = (e: any) => {
-      if (e.code === "Space" && !state.match.ganador) {
-        if (isRunning) {
-          detenerTemporizador();
-        } else if (selectedTime > 0) {
-          iniciarTemporizador();
+    if (!timer.temporizadorIniciado && timer.tiempoRestante === timer.selectedTime) {
+      setResetKey(prev => prev + 1);
+    }
+  }, [timer.temporizadorIniciado, timer.tiempoRestante, timer.selectedTime]);
+
+
+  // Keyboard shortcuts
+  useEffect(() => {
+    const handleKeyPress = (e: KeyboardEvent) => {
+      if (e.code === "Space" && !match.ganador) {
+        if (timer.temporizadorIniciado) {
+          stopTimer();
+        } else if (timer.tiempoRestante > 0) {
+          startTimer();
         }
       }
     };
-
     window.addEventListener("keydown", handleKeyPress);
+    return () => window.removeEventListener("keydown", handleKeyPress);
+  }, [timer.temporizadorIniciado, timer.tiempoRestante, match.ganador, startTimer, stopTimer]);
 
-    return () => {
-      window.removeEventListener("keydown", handleKeyPress);
-    };
-  }, [isRunning, selectedTime, state.match.ganador]);
-
-  const handleTimeEnd = (type: any) => {
-    if (type === "30sec") {
-      sonarCampana();
-    } else if (type === "end") {
-      setIsRunning(false);
-      sonarCampanaFinal();
-    }
-  };
-
-  useEffect(() => {
-    // Verificar que exista un bracket y un match actual antes de verificar puntajes
-    if (
-      !state.bracket.length ||
-      !state.bracket[state.currentRoundIndex] ||
-      !state.bracket[state.currentRoundIndex][state.currentMatchIndex] ||
-      state.match.ganador
-    ) {
-      return;
-    }
-
-    const puntajeAka = calcularPuntaje(
-      state.scores.aka.wazari,
-      state.scores.aka.ippon
-    );
-    const puntajeShiro = calcularPuntaje(
-      state.scores.shiro.wazari,
-      state.scores.shiro.ippon
-    );
-
-    if (puntajeAka >= 3) {
-      const currentMatch =
-        state.bracket[state.currentRoundIndex][state.currentMatchIndex];
-      const akaCompetidor = currentMatch.pair[0];
-      const akaNombre =
-        typeof akaCompetidor === "object"
-          ? akaCompetidor.Nombre
-          : akaCompetidor;
-
-      handleGanador("aka", akaNombre);
-    } else if (puntajeShiro >= 3) {
-      const currentMatch =
-        state.bracket[state.currentRoundIndex][state.currentMatchIndex];
-      const shiroCompetidor = currentMatch.pair[1];
-      const shiroNombre =
-        typeof shiroCompetidor === "object"
-          ? shiroCompetidor.Nombre
-          : shiroCompetidor;
-
-      handleGanador("shiro", shiroNombre);
-    }
-  }, [
-    state.scores.aka.wazari,
-    state.scores.aka.ippon,
-    state.scores.shiro.wazari,
-    state.scores.shiro.ippon,
-    state.bracket,
-    state.currentRoundIndex,
-    state.currentMatchIndex,
-    state.match.ganador,
-  ]);
-
-  const iniciarTemporizador = () => {
-    if (!isRunning && selectedTime > 0) {
-      setIsRunning(true);
-      dispatch({
-        type: "SET_TIMER",
-        payload: {
-          temporizadorIniciado: true,
-          tiempoRestante: selectedTime,
-        },
-      });
-    }
-  };
-
-  const detenerTemporizador = () => {
-    setIsRunning(false);
-    dispatch({
-      type: "SET_TIMER",
-      payload: {
-        temporizadorIniciado: false,
-      },
-    });
-  };
-
-  const reiniciarTemporizador = async () => {
-    if (selectedTime > 0) {
-      setIsRunning(false);
-      setCurrentTime(selectedTime);
-      setResetKey((prev) => prev + 1);
-      dispatch({
-        type: "SET_TIMER",
-        payload: {
-          temporizadorIniciado: false,
-          tiempoRestante: selectedTime,
-        },
-      });
-    }
-  };
-
-  const seleccionarTiempo = (tiempo: any) => {
-    setIsRunning(false);
-    setSelectedTime(tiempo);
-    setCurrentTime(tiempo);
-    setResetKey((prev) => prev + 1);
-  };
-
-  function resetAll() {
-    setIsRunning(false);
-    setSelectedTime(0);
-    setCurrentTime(0);
-    setResetKey((prev) => prev + 1);
-    dispatch({
-      type: "RESET_ALL",
-    });
-  }
 
   const sonarCampana = () => {
     audioRef.current?.play();
@@ -305,1213 +83,211 @@ export default function KumitePage() {
     audioFinalRef.current?.play();
   };
 
-  const calcularPuntaje = (wazari: any, ippon: any) => {
-    return wazari * 0.5 + ippon;
-  };
-
-  const handleAkaWazari = () => {
-    if (!state.match.ganador) {
-      dispatch({
-        type: "UPDATE_SCORE",
-        competitor: "aka",
-        payload: { wazari: state.scores.aka.wazari + 1 },
-      });
+  const handleTimeEnd = (type: "30sec" | "end") => {
+    if (type === "30sec") {
+      sonarCampana();
+    } else if (type === "end") {
+      stopTimer();
+      sonarCampanaFinal();
     }
   };
 
-  const handleAkaIppon = () => {
-    if (!state.match.ganador) {
-      dispatch({
-        type: "UPDATE_SCORE",
-        competitor: "aka",
-        payload: { ippon: state.scores.aka.ippon + 1 },
-      });
-    }
+  const onTimeUpdate = (time: number) => {
+    // Update context with current time so broadcast works
+    dispatch({ type: "SET_TIMER", payload: { tiempoRestante: time } });
   };
 
-  const handleShiroWazari = () => {
-    if (!state.match.ganador) {
-      dispatch({
-        type: "UPDATE_SCORE",
-        competitor: "shiro",
-        payload: { wazari: state.scores.shiro.wazari + 1 },
-      });
-    }
-  };
-
-  const handleShiroIppon = () => {
-    if (!state.match.ganador) {
-      dispatch({
-        type: "UPDATE_SCORE",
-        competitor: "shiro",
-        payload: { ippon: state.scores.shiro.ippon + 1 },
-      });
-    }
-  };
-
-  const handleFileUpload = (e: any) => {
-    const file = e.target.files[0];
-
-    if (file) {
-      const reader = new FileReader();
-
-      reader.onload = (e) => {
-        const data = e.target?.result;
-        const workbook = XLSX.read(data, { type: "array" });
-        const sheetName = workbook.SheetNames[0];
-        const worksheet = workbook.Sheets[sheetName];
-
-        const categoriaCell = worksheet["B1"];
-
-        // Extraer competidores del Excel
-        const competidoresExtraidos: Competidor[] = [];
-        let row = 3; // Empezar desde la fila 3
-        let id = 1;
-
-        while (true) {
-          const nombreCell = worksheet[`A${row}`];
-          const edadCell = worksheet[`B${row}`];
-
-          if (!nombreCell || !nombreCell.v) break;
-
-          competidoresExtraidos.push({
-            id: id++,
-            Nombre: nombreCell.v.toString(),
-            Edad: edadCell ? parseInt(edadCell.v.toString()) || 0 : 0,
-          });
-
-          row++;
-        }
-
-        // Actualizar el estado con los competidores extraídos
-        if (competidoresExtraidos.length > 0) {
-          const bracketData = generateBracket(competidoresExtraidos);
-
-          if (bracketData.length > 0 && bracketData[0].length > 0) {
-            const primerCombate = bracketData[0][0];
-            const aka = primerCombate.pair[0];
-            const shiro = primerCombate.pair[1];
-
-            dispatch({
-              type: "UPDATE_SCORE",
-              competitor: "aka",
-              payload: {
-                nombre: typeof aka === "object" ? aka.Nombre : aka,
-              },
-            });
-            dispatch({
-              type: "UPDATE_SCORE",
-              competitor: "shiro",
-              payload: {
-                nombre: typeof shiro === "object" ? shiro.Nombre : shiro,
-              },
-            });
-          }
-          dispatch({ type: "SET_BRACKET", payload: bracketData });
-
-          if (categoriaCell) {
-            dispatch({
-              type: "UPDATE_MATCH",
-              payload: { categoria: categoriaCell?.v || "" },
-            });
-          }
-        }
-      };
-      reader.readAsArrayBuffer(file);
-    }
-  };
-
-  const handleAreaChange = (e: any) => {
-    dispatch({
-      type: "UPDATE_MATCH",
-      payload: { area: e.target.value, areaSeleccionada: true },
-    });
-  };
-
-  const updateBracketWithWinner = (ganador: any) => {
-    const newBracket = [...state.bracket];
-    const currentMatch =
-      newBracket[state.currentRoundIndex][state.currentMatchIndex];
-
-    currentMatch.winner = ganador;
-
-    if (state.currentRoundIndex + 1 < newBracket.length) {
-      const nextRoundIndex = state.currentRoundIndex + 1;
-      const nextMatchIndex = Math.floor(state.currentMatchIndex / 2);
-      const nextMatch = newBracket[nextRoundIndex][nextMatchIndex];
-      const positionInPair = state.currentMatchIndex % 2;
-
-      nextMatch.pair[positionInPair] = ganador;
-    }
-
-    dispatch({ type: "SET_BRACKET", payload: newBracket });
-  };
-
-  const handleGanador = (
-    ganador: "aka" | "shiro",
-    nombreCompetidor?: string
-  ) => {
-    // Verificar que exista un match actual
-    if (
-      !state.bracket.length ||
-      !state.bracket[state.currentRoundIndex] ||
-      !state.bracket[state.currentRoundIndex][state.currentMatchIndex]
-    ) {
-      return;
-    }
-
-    const currentMatch =
-      state.bracket[state.currentRoundIndex][state.currentMatchIndex];
-    const ganadorCompetidor =
-      ganador === "aka" ? currentMatch.pair[0] : currentMatch.pair[1];
-    const ganadorNombre =
-      nombreCompetidor ||
-      (typeof ganadorCompetidor === "object"
-        ? ganadorCompetidor.Nombre
-        : ganadorCompetidor);
-
-    dispatch({
-      type: "UPDATE_MATCH",
-      payload: { ganador, showGanador: true, ganadorNombre },
-    });
-    detenerTemporizador();
-    updateBracketWithWinner(ganadorCompetidor);
-  };
-
-  const handleNextMatch = () => {
-    let newMatchIndex = state.currentMatchIndex + 1;
-    let newRoundIndex = state.currentRoundIndex;
-
-    if (newMatchIndex >= state.bracket[state.currentRoundIndex].length) {
-      newRoundIndex += 1;
-      newMatchIndex = 0;
-    }
-
-    if (newRoundIndex >= state.bracket.length) {
-      // Final del torneo
-      console.log("Fin del torneo");
-
-      return;
-    }
-
-    dispatch({
-      type: "NEXT_MATCH",
-      payload: {
-        currentMatchIndex: newMatchIndex,
-        currentRoundIndex: newRoundIndex,
-      },
-    });
-
-    const nextMatch = state.bracket[newRoundIndex][newMatchIndex];
-    const [aka, shiro] = nextMatch.pair;
-
-    dispatch({
-      type: "UPDATE_SCORE",
-      competitor: "aka",
-      payload: { nombre: typeof aka === "object" ? aka.Nombre : aka },
-    });
-    dispatch({
-      type: "UPDATE_SCORE",
-      competitor: "shiro",
-      payload: { nombre: typeof shiro === "object" ? shiro.Nombre : shiro },
-    });
-
-    reiniciarTemporizador();
-  };
-
-  const handleAkaShikaku = () => {
-    if (
-      !state.bracket.length ||
-      !state.bracket[state.currentRoundIndex] ||
-      !state.bracket[state.currentRoundIndex][state.currentMatchIndex]
-    ) {
-      return;
-    }
-    const currentMatch =
-      state.bracket[state.currentRoundIndex][state.currentMatchIndex];
-    const shiroCompetidor = currentMatch.pair[1];
-    const shiroNombre =
-      typeof shiroCompetidor === "object"
-        ? shiroCompetidor.Nombre
-        : shiroCompetidor;
-
-    handleGanador("shiro", shiroNombre);
-  };
-
-  const handleAkaKiken = () => {
-    if (
-      !state.bracket.length ||
-      !state.bracket[state.currentRoundIndex] ||
-      !state.bracket[state.currentRoundIndex][state.currentMatchIndex]
-    ) {
-      return;
-    }
-    const currentMatch =
-      state.bracket[state.currentRoundIndex][state.currentMatchIndex];
-    const shiroCompetidor = currentMatch.pair[1];
-    const shiroNombre =
-      typeof shiroCompetidor === "object"
-        ? shiroCompetidor.Nombre
-        : shiroCompetidor;
-
-    handleGanador("shiro", shiroNombre);
-  };
-
-  const handleShiroShikaku = () => {
-    if (
-      !state.bracket.length ||
-      !state.bracket[state.currentRoundIndex] ||
-      !state.bracket[state.currentRoundIndex][state.currentMatchIndex]
-    ) {
-      return;
-    }
-    const currentMatch =
-      state.bracket[state.currentRoundIndex][state.currentMatchIndex];
-    const akaCompetidor = currentMatch.pair[0];
-    const akaNombre =
-      typeof akaCompetidor === "object" ? akaCompetidor.Nombre : akaCompetidor;
-
-    handleGanador("aka", akaNombre);
-  };
-
-  const handleShiroKiken = () => {
-    if (
-      !state.bracket.length ||
-      !state.bracket[state.currentRoundIndex] ||
-      !state.bracket[state.currentRoundIndex][state.currentMatchIndex]
-    ) {
-      return;
-    }
-    const currentMatch =
-      state.bracket[state.currentRoundIndex][state.currentMatchIndex];
-    const akaCompetidor = currentMatch.pair[0];
-    const akaNombre =
-      typeof akaCompetidor === "object" ? akaCompetidor.Nombre : akaCompetidor;
-
-    handleGanador("aka", akaNombre);
-  };
-
-  const handleAkaKinshiHansoku = () => {
-    dispatch({
-      type: "UPDATE_SCORE",
-      competitor: "aka",
-      payload: { kinshiHansoku: true },
-    });
-    if (
-      !state.bracket.length ||
-      !state.bracket[state.currentRoundIndex] ||
-      !state.bracket[state.currentRoundIndex][state.currentMatchIndex]
-    ) {
-      return;
-    }
-    const currentMatch =
-      state.bracket[state.currentRoundIndex][state.currentMatchIndex];
-    const shiroCompetidor = currentMatch.pair[1];
-    const shiroNombre =
-      typeof shiroCompetidor === "object"
-        ? shiroCompetidor.Nombre
-        : shiroCompetidor;
-
-    handleGanador("shiro", shiroNombre);
-  };
-
-  const handleAkaAtenaiHansoku = () => {
-    dispatch({
-      type: "UPDATE_SCORE",
-      competitor: "aka",
-      payload: { atenaiHansoku: true },
-    });
-    if (
-      !state.bracket.length ||
-      !state.bracket[state.currentRoundIndex] ||
-      !state.bracket[state.currentRoundIndex][state.currentMatchIndex]
-    ) {
-      return;
-    }
-    const currentMatch =
-      state.bracket[state.currentRoundIndex][state.currentMatchIndex];
-    const shiroCompetidor = currentMatch.pair[1];
-    const shiroNombre =
-      typeof shiroCompetidor === "object"
-        ? shiroCompetidor.Nombre
-        : shiroCompetidor;
-
-    handleGanador("shiro", shiroNombre);
-  };
-
-  const handleShiroKinshiHansoku = () => {
-    dispatch({
-      type: "UPDATE_SCORE",
-      competitor: "shiro",
-      payload: { kinshiHansoku: true },
-    });
-    if (
-      !state.bracket.length ||
-      !state.bracket[state.currentRoundIndex] ||
-      !state.bracket[state.currentRoundIndex][state.currentMatchIndex]
-    ) {
-      return;
-    }
-    const currentMatch =
-      state.bracket[state.currentRoundIndex][state.currentMatchIndex];
-    const akaCompetidor = currentMatch.pair[0];
-    const akaNombre =
-      typeof akaCompetidor === "object" ? akaCompetidor.Nombre : akaCompetidor;
-
-    handleGanador("aka", akaNombre);
-  };
-
-  const handleShiroAtenaiHansoku = () => {
-    dispatch({
-      type: "UPDATE_SCORE",
-      competitor: "shiro",
-      payload: { atenaiHansoku: true },
-    });
-    if (
-      !state.bracket.length ||
-      !state.bracket[state.currentRoundIndex] ||
-      !state.bracket[state.currentRoundIndex][state.currentMatchIndex]
-    ) {
-      return;
-    }
-    const currentMatch =
-      state.bracket[state.currentRoundIndex][state.currentMatchIndex];
-    const akaCompetidor = currentMatch.pair[0];
-    const akaNombre =
-      typeof akaCompetidor === "object" ? akaCompetidor.Nombre : akaCompetidor;
-
-    handleGanador("aka", akaNombre);
-  };
-
-  const handleAkaHantei = () => {
-    if (
-      !state.bracket.length ||
-      !state.bracket[state.currentRoundIndex] ||
-      !state.bracket[state.currentRoundIndex][state.currentMatchIndex]
-    ) {
-      return;
-    }
-    const currentMatch =
-      state.bracket[state.currentRoundIndex][state.currentMatchIndex];
-    const akaCompetidor = currentMatch.pair[0];
-    const akaNombre =
-      typeof akaCompetidor === "object" ? akaCompetidor.Nombre : akaCompetidor;
-
-    handleGanador("aka", akaNombre);
-  };
-
-  const handleShiroHantei = () => {
-    if (
-      !state.bracket.length ||
-      !state.bracket[state.currentRoundIndex] ||
-      !state.bracket[state.currentRoundIndex][state.currentMatchIndex]
-    ) {
-      return;
-    }
-    const currentMatch =
-      state.bracket[state.currentRoundIndex][state.currentMatchIndex];
-    const shiroCompetidor = currentMatch.pair[1];
-    const shiroNombre =
-      typeof shiroCompetidor === "object"
-        ? shiroCompetidor.Nombre
-        : shiroCompetidor;
-
-    handleGanador("shiro", shiroNombre);
-  };
-
-  const handleOpenKumiteDisplay = async () => {
+  const handleOpenKumiteDisplay = () => {
     window.open("/kumite-display", "_blank", "width=1280,height=800");
-
-    // Se necesita un pequeño retraso para dar tiempo a la nueva ventana a que se abra
-    // y establezca sus listeners de eventos antes de enviar los datos.
     setTimeout(() => {
-      const currentMatch =
-        state.bracket.length > 0 &&
-        state.bracket.length > state.currentRoundIndex &&
-        state.bracket[state.currentRoundIndex].length > state.currentMatchIndex
-          ? state.bracket[state.currentRoundIndex][state.currentMatchIndex]
-          : null;
-
-      const nextMatch =
-        state.bracket.length > 0 &&
-        state.bracket.length > state.currentRoundIndex &&
-        state.bracket[state.currentRoundIndex].length >
-          state.currentMatchIndex + 1
-          ? state.bracket[state.currentRoundIndex][state.currentMatchIndex + 1]
-          : state.bracket.length > state.currentRoundIndex + 1
-            ? state.bracket[state.currentRoundIndex + 1][0]
-            : null;
-
-      const akaCompetitor = currentMatch?.pair[0];
-      const shiroCompetitor = currentMatch?.pair[1];
-
-      const akaNombre =
-        typeof akaCompetitor === "object"
-          ? akaCompetitor.Nombre
-          : typeof akaCompetitor === "string"
-            ? akaCompetitor
-            : state.scores.aka.nombre;
-      const shiroNombre =
-        typeof shiroCompetitor === "object"
-          ? shiroCompetitor.Nombre
-          : typeof shiroCompetitor === "string"
-            ? shiroCompetitor
-            : state.scores.shiro.nombre;
-
-      const dataParaEnviar = {
-        scores: {
-          aka: {
-            ...state.scores.aka,
-            nombre: akaNombre,
-          },
-          shiro: {
-            ...state.scores.shiro,
-            nombre: shiroNombre,
-          },
-        },
-        timer: {
-          isRunning: isRunning,
-          time: currentTime || selectedTime,
-        },
-        matchInfo: {
-          current: currentMatch,
-          next: nextMatch,
-        },
-      };
-
-      kumiteChannel.postMessage(dataParaEnviar);
+      broadcastData();
     }, 1000);
   };
 
-  const updateSecondaryWindow = (currentTimeValue: any) => {
-    setCurrentTime(currentTimeValue);
-  };
-
-  useEffect(() => {
-    const currentMatch =
-      state.bracket.length > 0 &&
-      state.bracket.length > state.currentRoundIndex &&
-      state.bracket[state.currentRoundIndex].length > state.currentMatchIndex
-        ? state.bracket[state.currentRoundIndex][state.currentMatchIndex]
-        : null;
-
-    const nextMatch =
-      state.bracket.length > 0 &&
-      state.bracket.length > state.currentRoundIndex &&
-      state.bracket[state.currentRoundIndex].length >
-        state.currentMatchIndex + 1
-        ? state.bracket[state.currentRoundIndex][state.currentMatchIndex + 1]
-        : state.bracket.length > state.currentRoundIndex + 1
-          ? state.bracket[state.currentRoundIndex + 1][0]
-          : null;
-
-    const akaCompetitor = currentMatch?.pair[0];
-    const shiroCompetitor = currentMatch?.pair[1];
-
-    const akaNombre =
-      typeof akaCompetitor === "object"
-        ? akaCompetitor.Nombre
-        : typeof akaCompetitor === "string"
-          ? akaCompetitor
-          : state.scores.aka.nombre;
-    const shiroNombre =
-      typeof shiroCompetitor === "object"
-        ? shiroCompetitor.Nombre
-        : typeof shiroCompetitor === "string"
-          ? shiroCompetitor
-          : state.scores.shiro.nombre;
-
-    const dataParaEnviar = {
-      scores: {
-        aka: {
-          ...state.scores.aka,
-          nombre: akaNombre,
-        },
-        shiro: {
-          ...state.scores.shiro,
-          nombre: shiroNombre,
-        },
-      },
-      timer: {
-        isRunning: isRunning,
-        time: currentTime || selectedTime,
-      },
-      matchInfo: {
-        current: currentMatch,
-        next: nextMatch,
-      },
-    };
-
-    kumiteChannel.postMessage(dataParaEnviar);
-  }, [
-    state.scores,
-    isRunning,
-    currentTime,
-    selectedTime,
-    state.bracket,
-    state.currentMatchIndex,
-    state.currentRoundIndex,
-  ]);
-
   return (
-    <div className="w-full min-h-screen flex flex-col px-2 sm:px-4 md:px-6 lg:px-10 py-2 bg-gradient-to-b from-blue-500/30 to-blue-800/90">
+    <AnimatedPage className="w-full min-h-screen flex flex-col px-2 sm:px-4 md:px-6 lg:px-10 py-2 bg-gradient-to-b from-blue-500/30 to-blue-800/90">
+
       {/* Header Section */}
-      {isSm && (
-        <>
-          <div className="w-full flex flex-col lg:flex-row justify-between gap-4 mb-4">
-            <div className="w-16 h-16 sm:w-20 sm:h-20 md:w-24 md:h-24 lg:w-[10%] lg:h-[10%] mx-auto lg:mx-0">
-              <Image
-                alt="Logo"
-                className="w-full h-full object-cover rounded-full"
-                src={Logo}
-              />
-            </div>
+      <div className="w-full flex flex-col lg:flex-row justify-between gap-4 mb-4">
+        <div className={`w-16 h-16 sm:w-20 sm:h-20 md:w-24 md:h-24 lg:w-[10%] lg:h-[10%] ${isSm ? "mx-auto lg:mx-0" : ""}`}>
+          <Image alt="Logo" className="w-full h-full object-cover rounded-full" src={Logo} />
+        </div>
 
-            {/* Controls Section - Responsive */}
-            <div className="w-full flex flex-row lg:flex-row justify-center gap-4 lg:gap-16 self-center">
-              <div className="flex flex-row sm:flex-row gap-2 sm:gap-4 justify-center items-center">
-                <h3 className="font-semibold self-center text-lg sm:text-xl lg:text-2xl">
-                  Categoría:
-                </h3>
-                <CommonInput
-                  isReadOnly
-                  label="Categoria"
-                  value={state.match.categoria}
-                />
-                <input
-                  accept=".xlsx,.xls"
-                  className="hidden"
-                  id="excel-upload"
-                  type="file"
-                  onChange={handleFileUpload}
-                />
-                <Button
-                  className="bg-green-700 text-white self-center text-sm sm:text-base"
-                  isDisabled={!state.match.areaSeleccionada}
-                  onPress={() =>
-                    document?.getElementById("excel-upload")?.click()
-                  }
-                >
-                  Cargar Excel
-                </Button>
-              </div>
-
-              <div className="flex flex-col sm:flex-row items-center gap-2 sm:gap-4 justify-center">
-                <h2 className="text-black dark:text-white font-semibold text-xl sm:text-2xl lg:text-3xl">
-                  Area:
-                </h2>
-                {state.match.areaSeleccionada ? (
-                  <Input
-                    isReadOnly
-                    className="rounded-md text-center font-bold"
-                    value={state.match.area}
-                  />
-                ) : (
-                  <Select
-                    className="rounded-md"
-                    label="Area"
-                    placeholder="Seleccionar Area"
-                    value={state.match.area}
-                    onChange={handleAreaChange}
-                  >
-                    {items.map((item) => (
-                      <SelectItem key={item.key}>{item.label}</SelectItem>
-                    ))}
-                  </Select>
-                )}
-              </div>
-
-              <div className="flex items-center gap-4 justify-center">
-                <ModalLlaves bracket={state.bracket} />
-              </div>
-              <div className="grid grid-cols-2 gap-2 self-center">
-                <MenuComponent
-                  handleOpenKumiteDisplay={handleOpenKumiteDisplay}
-                />
-              </div>
-            </div>
+        <div className="w-full flex flex-row lg:flex-row justify-center gap-4 lg:gap-16 self-center">
+          <div className="flex flex-row sm:flex-row gap-2 sm:gap-4 justify-center items-center">
+            <h3 className="font-semibold self-center text-lg sm:text-xl lg:text-2xl">Categoría:</h3>
+            <CommonInput isReadOnly label="Categoria" value={match.categoria} />
+            <ExcelUploader disabled={!match.areaSeleccionada} onUpload={(e) => {
+              const file = e.target.files?.[0];
+              if (file) handleFileUpload(file);
+            }} />
           </div>
 
-          {/* Main Content Section - Responsive Layout */}
-          <div className="w-full flex flex-col xl:flex-row py-0 xl:py-20 overflow-hidden justify-between items-start gap-4 flex-1">
-            {/* Timer Section - Responsive - Arriba en móviles/tablets, centro en desktop */}
-            <div className="w-full xl:w-1/5 flex flex-col justify-center items-center gap-2 order-1 xl:order-2 min-h-[200px] sm:min-h-[250px] xl:min-h-[400px]">
-              <div className="flex gap-2 lg:gap-4 justify-center flex-wrap">
-                <Button
-                  isDisabled={state.match.ganador !== null || isRunning}
-                  onPress={() => seleccionarTiempo(180)}
-                  size="sm"
-                  className="text-xs lg:text-sm"
-                >
-                  3:00
-                </Button>
-                <Button
-                  isDisabled={state.match.ganador !== null || isRunning}
-                  onPress={() => seleccionarTiempo(120)}
-                  size="sm"
-                  className="text-xs lg:text-sm"
-                >
-                  2:00
-                </Button>
-                <Button
-                  isDisabled={state.match.ganador !== null || isRunning}
-                  onPress={() => seleccionarTiempo(60)}
-                  size="sm"
-                  className="text-xs lg:text-sm"
-                >
-                  1:00
-                </Button>
-              </div>
-
-              <Temporizador
-                initialTime={currentTime || selectedTime}
-                isRunning={isRunning}
-                resetKey={resetKey}
-                onTimeEnd={handleTimeEnd}
-                onTimeUpdate={updateSecondaryWindow}
-              />
-
-              <div className="flex gap-2 lg:gap-4 justify-center flex-wrap">
-                <Button
-                  isDisabled={
-                    state.match.ganador !== null ||
-                    isRunning ||
-                    selectedTime === 0
-                  }
-                  onPress={iniciarTemporizador}
-                  size="sm"
-                  className="text-xs lg:text-sm"
-                >
-                  {isRunning ? "Reanudar" : "Iniciar"}
-                </Button>
-                <Button
-                  isDisabled={state.match.ganador !== null || !isRunning}
-                  onPress={detenerTemporizador}
-                  size="sm"
-                  className="text-xs lg:text-sm"
-                >
-                  Detener
-                </Button>
-                <Button
-                  isDisabled={
-                    state.match.ganador !== null ||
-                    isRunning ||
-                    selectedTime === 0
-                  }
-                  onPress={reiniciarTemporizador}
-                  size="sm"
-                  className="text-xs lg:text-sm"
-                >
-                  Reiniciar
-                </Button>
-              </div>
-
-              {state.match.ganador && (
-                <Button
-                  color="success"
-                  size="sm"
-                  className="text-xs sm:text-sm"
-                  onPress={handleNextMatch}
-                >
-                  Siguiente Combate
-                </Button>
-              )}
-
-              <div className="flex flex-col gap-2">
-                <div className="flex gap-2 lg:gap-4 justify-center flex-wrap">
-                  <Button
-                    isDisabled={state.match.ganador !== null}
-                    size="sm"
-                    variant="light"
-                    onPress={sonarCampana}
-                    className="text-xs"
-                  >
-                    Campana 30 seg
-                  </Button>
-                  <Button size="sm" variant="light" onPress={resetAll}>
-                    <MdLockReset className="text-lg sm:text-xl lg:text-2xl" />
-                  </Button>
-                  <Button
-                    isDisabled={state.match.ganador !== null}
-                    size="sm"
-                    variant="light"
-                    onPress={sonarCampanaFinal}
-                    className="text-xs"
-                  >
-                    Campana fin del tiempo
-                  </Button>
-                </div>
-                <audio ref={audioRef}>
-                  <source src={Bell} type="audio/wav" />
-                  <track kind="captions" label="Español" src="" />
-                </audio>
-                <audio ref={audioFinalRef}>
-                  <source src={Bell3} type="audio/wav" />
-                  <track kind="captions" label="Español" src="" />
-                </audio>
-              </div>
-            </div>
-
-            {/* Panels Section - Grid layout para móviles/tablets, flex para desktop */}
-            <div className="w-full grid grid-cols-2 xl:flex xl:flex-row xl:justify-center gap-4 order-2 xl:order-1">
-              {/* AKA Panel - Responsive */}
-              <div className="w-full xl:w-2/5">
-                <PanelCard
-                  atenai={state.scores.aka.atenai}
-                  atenaiChui={state.scores.aka.atenaiChui}
-                  atenaiHansoku={state.scores.aka.atenaiHansoku}
-                  cinto="aka"
-                  disabled={state.match.ganador !== null}
-                  imagen={AkaBelt}
-                  ippon={state.scores.aka.ippon}
-                  kiken={state.scores.aka.kiken}
-                  kinshi={state.scores.aka.kinshi}
-                  kinshiChui={state.scores.aka.kinshiChui}
-                  kinshiHansoku={state.scores.aka.kinshiHansoku}
-                  kinshiNi={state.scores.aka.kinshiNi}
-                  nombre={state.scores.aka.nombre}
-                  shikaku={state.scores.aka.shikaku}
-                  wazari={state.scores.aka.wazari}
-                  onAtenai={() =>
-                    dispatch({
-                      type: "UPDATE_SCORE",
-                      competitor: "aka",
-                      payload: { atenai: true },
-                    })
-                  }
-                  onAtenaiChui={() =>
-                    dispatch({
-                      type: "UPDATE_SCORE",
-                      competitor: "aka",
-                      payload: { atenaiChui: true },
-                    })
-                  }
-                  onAtenaiHansoku={handleAkaAtenaiHansoku}
-                  onHantei={handleAkaHantei}
-                  onIppon={handleAkaIppon}
-                  onKiken={handleAkaKiken}
-                  onKinshi={() =>
-                    dispatch({
-                      type: "UPDATE_SCORE",
-                      competitor: "aka",
-                      payload: { kinshi: true },
-                    })
-                  }
-                  onKinshiChui={() =>
-                    dispatch({
-                      type: "UPDATE_SCORE",
-                      competitor: "aka",
-                      payload: { kinshiChui: true },
-                    })
-                  }
-                  onKinshiHansoku={handleAkaKinshiHansoku}
-                  onKinshiNi={() =>
-                    dispatch({
-                      type: "UPDATE_SCORE",
-                      competitor: "aka",
-                      payload: { kinshiNi: true },
-                    })
-                  }
-                  onShikaku={handleAkaShikaku}
-                  onWazari={handleAkaWazari}
-                />
-              </div>
-
-              {/* SHIRO Panel - Responsive */}
-              <div className="w-full xl:w-2/5">
-                <PanelCard
-                  atenai={state.scores.shiro.atenai}
-                  atenaiChui={state.scores.shiro.atenaiChui}
-                  atenaiHansoku={state.scores.shiro.atenaiHansoku}
-                  cinto="shiro"
-                  disabled={state.match.ganador !== null}
-                  imagen={ShiroBelt}
-                  ippon={state.scores.shiro.ippon}
-                  kiken={state.scores.shiro.kiken}
-                  kinshi={state.scores.shiro.kinshi}
-                  kinshiChui={state.scores.shiro.kinshiChui}
-                  kinshiHansoku={state.scores.shiro.kinshiHansoku}
-                  kinshiNi={state.scores.shiro.kinshiNi}
-                  nombre={state.scores.shiro.nombre}
-                  shikaku={state.scores.shiro.shikaku}
-                  wazari={state.scores.shiro.wazari}
-                  onAtenai={() =>
-                    dispatch({
-                      type: "UPDATE_SCORE",
-                      competitor: "shiro",
-                      payload: { atenai: true },
-                    })
-                  }
-                  onAtenaiChui={() =>
-                    dispatch({
-                      type: "UPDATE_SCORE",
-                      competitor: "shiro",
-                      payload: { atenaiChui: true },
-                    })
-                  }
-                  onAtenaiHansoku={handleShiroAtenaiHansoku}
-                  onHantei={handleShiroHantei}
-                  onIppon={handleShiroIppon}
-                  onKiken={handleShiroKiken}
-                  onKinshi={() =>
-                    dispatch({
-                      type: "UPDATE_SCORE",
-                      competitor: "shiro",
-                      payload: { kinshi: true },
-                    })
-                  }
-                  onKinshiChui={() =>
-                    dispatch({
-                      type: "UPDATE_SCORE",
-                      competitor: "shiro",
-                      payload: { kinshiChui: true },
-                    })
-                  }
-                  onKinshiHansoku={handleShiroKinshiHansoku}
-                  onKinshiNi={() =>
-                    dispatch({
-                      type: "UPDATE_SCORE",
-                      competitor: "shiro",
-                      payload: { kinshiNi: true },
-                    })
-                  }
-                  onShikaku={handleShiroShikaku}
-                  onWazari={handleShiroWazari}
-                />
-              </div>
-            </div>
-          </div>
-        </>
-      )}
-      {isLgUp && (
-        <>
-          <div className="w-full flex flex-col lg:flex-row justify-between gap-4 mb-4">
-            <div className="w-16 h-16 sm:w-20 sm:h-20 md:w-24 md:h-24 lg:w-[10%] lg:h-[10%] mx-auto lg:mx-0">
-              <Image
-                alt="Logo"
-                className="w-full h-full object-cover rounded-full"
-                src={Logo}
-              />
-            </div>
-
-            {/* Controls Section - Responsive */}
-            <div className="w-full flex flex-row lg:flex-row justify-center gap-4 lg:gap-16 self-center">
-              <div className="flex flex-row sm:flex-row gap-2 sm:gap-4 justify-center items-center">
-                <h3 className="font-semibold self-center text-lg sm:text-xl lg:text-2xl">
-                  Categoría:
-                </h3>
-                <CommonInput
-                  isReadOnly
-                  label="Categoria"
-                  value={state.match.categoria}
-                />
-                <input
-                  accept=".xlsx,.xls"
-                  className="hidden"
-                  id="excel-upload"
-                  type="file"
-                  onChange={handleFileUpload}
-                />
-                <Button
-                  className="bg-green-700 text-white self-center text-sm sm:text-base"
-                  isDisabled={!state.match.areaSeleccionada}
-                  onPress={() =>
-                    document?.getElementById("excel-upload")?.click()
-                  }
-                >
-                  Cargar Excel
-                </Button>
-              </div>
-
-              <div className="flex flex-col sm:flex-row items-center gap-2 sm:gap-4 justify-center">
-                <h2 className="text-black dark:text-white font-semibold text-xl sm:text-2xl lg:text-3xl">
-                  Area:
-                </h2>
-                {state.match.areaSeleccionada ? (
-                  <Input
-                    isReadOnly
-                    className="rounded-md text-center font-bold"
-                    value={state.match.area}
-                  />
-                ) : (
-                  <Select
-                    className="rounded-md"
-                    label="Area"
-                    placeholder="Seleccionar Area"
-                    value={state.match.area}
-                    onChange={handleAreaChange}
-                  >
-                    {items.map((item) => (
-                      <SelectItem key={item.key}>{item.label}</SelectItem>
-                    ))}
-                  </Select>
-                )}
-              </div>
-
-              <div className="flex items-center gap-4 justify-center">
-                <ModalLlaves bracket={state.bracket} />
-              </div>
-              <div className="grid grid-cols-2 gap-2 self-center">
-                <MenuComponent
-                  handleOpenKumiteDisplay={handleOpenKumiteDisplay}
-                />
-              </div>
-            </div>
+          <div className="flex flex-col sm:flex-row items-center gap-2 sm:gap-4 justify-center">
+            <h2 className="text-black dark:text-white font-semibold text-xl sm:text-2xl lg:text-3xl">Area:</h2>
+            <AreaSelector disabled={match.areaSeleccionada} value={match.area} onChange={(e) => setArea(e.target.value)} />
           </div>
 
-          <div className="w-full flex py-20 overflow-hidden justify-between items-start gap-4 flex-1">
-            <div className="w-full xl:w-2/5">
-              <PanelCard
-                atenai={state.scores.aka.atenai}
-                atenaiChui={state.scores.aka.atenaiChui}
-                atenaiHansoku={state.scores.aka.atenaiHansoku}
-                cinto="aka"
-                disabled={state.match.ganador !== null}
-                imagen={AkaBelt}
-                ippon={state.scores.aka.ippon}
-                kiken={state.scores.aka.kiken}
-                kinshi={state.scores.aka.kinshi}
-                kinshiChui={state.scores.aka.kinshiChui}
-                kinshiHansoku={state.scores.aka.kinshiHansoku}
-                kinshiNi={state.scores.aka.kinshiNi}
-                nombre={state.scores.aka.nombre}
-                shikaku={state.scores.aka.shikaku}
-                wazari={state.scores.aka.wazari}
-                onAtenai={() =>
-                  dispatch({
-                    type: "UPDATE_SCORE",
-                    competitor: "aka",
-                    payload: { atenai: true },
-                  })
-                }
-                onAtenaiChui={() =>
-                  dispatch({
-                    type: "UPDATE_SCORE",
-                    competitor: "aka",
-                    payload: { atenaiChui: true },
-                  })
-                }
-                onAtenaiHansoku={handleAkaAtenaiHansoku}
-                onHantei={handleAkaHantei}
-                onIppon={handleAkaIppon}
-                onKiken={handleAkaKiken}
-                onKinshi={() =>
-                  dispatch({
-                    type: "UPDATE_SCORE",
-                    competitor: "aka",
-                    payload: { kinshi: true },
-                  })
-                }
-                onKinshiChui={() =>
-                  dispatch({
-                    type: "UPDATE_SCORE",
-                    competitor: "aka",
-                    payload: { kinshiChui: true },
-                  })
-                }
-                onKinshiHansoku={handleAkaKinshiHansoku}
-                onKinshiNi={() =>
-                  dispatch({
-                    type: "UPDATE_SCORE",
-                    competitor: "aka",
-                    payload: { kinshiNi: true },
-                  })
-                }
-                onShikaku={handleAkaShikaku}
-                onWazari={handleAkaWazari}
-              />
-            </div>
-            <div className="w-full xl:w-1/5 flex flex-col justify-center items-center gap-2 min-h-[200px] sm:min-h-[250px] xl:min-h-[400px]">
-              <div className="flex gap-2 lg:gap-4 justify-center flex-wrap">
-                <Button
-                  isDisabled={state.match.ganador !== null || isRunning}
-                  onPress={() => seleccionarTiempo(180)}
-                  size="sm"
-                  className="text-xs lg:text-sm"
-                >
-                  3:00
-                </Button>
-                <Button
-                  isDisabled={state.match.ganador !== null || isRunning}
-                  onPress={() => seleccionarTiempo(120)}
-                  size="sm"
-                  className="text-xs lg:text-sm"
-                >
-                  2:00
-                </Button>
-                <Button
-                  isDisabled={state.match.ganador !== null || isRunning}
-                  onPress={() => seleccionarTiempo(60)}
-                  size="sm"
-                  className="text-xs lg:text-sm"
-                >
-                  1:00
-                </Button>
-              </div>
-
-              <Temporizador
-                initialTime={currentTime || selectedTime}
-                isRunning={isRunning}
-                resetKey={resetKey}
-                onTimeEnd={handleTimeEnd}
-                onTimeUpdate={updateSecondaryWindow}
-              />
-
-              <div className="flex gap-2 lg:gap-4 justify-center flex-wrap">
-                <Button
-                  isDisabled={
-                    state.match.ganador !== null ||
-                    isRunning ||
-                    selectedTime === 0
-                  }
-                  onPress={iniciarTemporizador}
-                  size="sm"
-                  className="text-xs lg:text-sm"
-                >
-                  {isRunning ? "Reanudar" : "Iniciar"}
-                </Button>
-                <Button
-                  isDisabled={state.match.ganador !== null || !isRunning}
-                  onPress={detenerTemporizador}
-                  size="sm"
-                  className="text-xs lg:text-sm"
-                >
-                  Detener
-                </Button>
-                <Button
-                  isDisabled={
-                    state.match.ganador !== null ||
-                    isRunning ||
-                    selectedTime === 0
-                  }
-                  onPress={reiniciarTemporizador}
-                  size="sm"
-                  className="text-xs lg:text-sm"
-                >
-                  Reiniciar
-                </Button>
-              </div>
-
-              {state.match.ganador && (
-                <Button
-                  color="success"
-                  size="sm"
-                  className="text-xs sm:text-sm"
-                  onPress={handleNextMatch}
-                >
-                  Siguiente Combate
-                </Button>
-              )}
-
-              <div className="flex flex-col gap-2">
-                <div className="flex gap-2 lg:gap-4 justify-center flex-wrap">
-                  <Button
-                    isDisabled={state.match.ganador !== null}
-                    size="sm"
-                    variant="light"
-                    onPress={sonarCampana}
-                    className="text-xs"
-                  >
-                    Campana 30 seg
-                  </Button>
-                  <Button size="sm" variant="light" onPress={resetAll}>
-                    <MdLockReset className="text-lg sm:text-xl lg:text-2xl" />
-                  </Button>
-                  <Button
-                    isDisabled={state.match.ganador !== null}
-                    size="sm"
-                    variant="light"
-                    onPress={sonarCampanaFinal}
-                    className="text-xs"
-                  >
-                    Campana fin del tiempo
-                  </Button>
-                </div>
-                <audio ref={audioRef}>
-                  <source src={Bell} type="audio/wav" />
-                  <track kind="captions" label="Español" src="" />
-                </audio>
-                <audio ref={audioFinalRef}>
-                  <source src={Bell3} type="audio/wav" />
-                  <track kind="captions" label="Español" src="" />
-                </audio>
-              </div>
-            </div>
-            <div className="w-full xl:w-2/5">
-              <PanelCard
-                atenai={state.scores.shiro.atenai}
-                atenaiChui={state.scores.shiro.atenaiChui}
-                atenaiHansoku={state.scores.shiro.atenaiHansoku}
-                cinto="shiro"
-                disabled={state.match.ganador !== null}
-                imagen={ShiroBelt}
-                ippon={state.scores.shiro.ippon}
-                kiken={state.scores.shiro.kiken}
-                kinshi={state.scores.shiro.kinshi}
-                kinshiChui={state.scores.shiro.kinshiChui}
-                kinshiHansoku={state.scores.shiro.kinshiHansoku}
-                kinshiNi={state.scores.shiro.kinshiNi}
-                nombre={state.scores.shiro.nombre}
-                shikaku={state.scores.shiro.shikaku}
-                wazari={state.scores.shiro.wazari}
-                onAtenai={() =>
-                  dispatch({
-                    type: "UPDATE_SCORE",
-                    competitor: "shiro",
-                    payload: { atenai: true },
-                  })
-                }
-                onAtenaiChui={() =>
-                  dispatch({
-                    type: "UPDATE_SCORE",
-                    competitor: "shiro",
-                    payload: { atenaiChui: true },
-                  })
-                }
-                onAtenaiHansoku={handleShiroAtenaiHansoku}
-                onHantei={handleShiroHantei}
-                onIppon={handleShiroIppon}
-                onKiken={handleShiroKiken}
-                onKinshi={() =>
-                  dispatch({
-                    type: "UPDATE_SCORE",
-                    competitor: "shiro",
-                    payload: { kinshi: true },
-                  })
-                }
-                onKinshiChui={() =>
-                  dispatch({
-                    type: "UPDATE_SCORE",
-                    competitor: "shiro",
-                    payload: { kinshiChui: true },
-                  })
-                }
-                onKinshiHansoku={handleShiroKinshiHansoku}
-                onKinshiNi={() =>
-                  dispatch({
-                    type: "UPDATE_SCORE",
-                    competitor: "shiro",
-                    payload: { kinshiNi: true },
-                  })
-                }
-                onShikaku={handleShiroShikaku}
-                onWazari={handleShiroWazari}
-              />
-            </div>
+          <div className="flex items-center gap-4 justify-center">
+            <ModalLlaves bracket={bracket} />
           </div>
-        </>
-      )}
+          <div className="grid grid-cols-2 gap-2 self-center">
+            <MenuComponent handleOpenKumiteDisplay={handleOpenKumiteDisplay} />
+          </div>
+        </div>
+      </div>
+
+      {/* Main Content */}
+      <div className={`w-full flex ${isSm ? "flex-col" : "py-20 flex flex-col xl:flex-row"} overflow-hidden justify-between items-start gap-4 flex-1`}>
+        <div className="w-full xl:flex-1 order-2 xl:order-1">
+          <PanelCard
+            atenai={scores.aka.atenai}
+            atenaiChui={scores.aka.atenaiChui}
+            atenaiHansoku={scores.aka.atenaiHansoku}
+            cinto="aka"
+            disabled={match.ganador !== null}
+            imagen={AkaBelt}
+            ippon={scores.aka.ippon}
+            kiken={scores.aka.kiken}
+            kinshi={scores.aka.kinshi}
+            kinshiChui={scores.aka.kinshiChui}
+            kinshiHansoku={scores.aka.kinshiHansoku}
+            kinshiNi={scores.aka.kinshiNi}
+            nombre={scores.aka.nombre}
+            shikaku={scores.aka.shikaku}
+            wazari={scores.aka.wazari}
+            // Penalties
+            // Handlers
+            onAtenai={() => updateScore("aka", "atenai")}
+            onAtenaiChui={() => updateScore("aka", "atenaiChui")}
+            onAtenaiHansoku={() => updateScore("aka", "atenaiHansoku")} // Handled in context logic to trigger winner
+            onHantei={() => setWinner("aka")} // Hantei = manual winner selection
+            onIppon={() => updateScore("aka", "ippon")}
+            onKiken={() => updateScore("aka", "kiken")}
+            onKinshi={() => updateScore("aka", "kinshi")}
+            onKinshiChui={() => updateScore("aka", "kinshiChui")}
+            onKinshiHansoku={() => updateScore("aka", "kinshiHansoku")}
+            onKinshiNi={() => updateScore("aka", "kinshiNi")}
+            onShikaku={() => updateScore("aka", "shikaku")}
+            onWazari={() => updateScore("aka", "wazari")}
+          />
+        </div>
+        {/* Timer Section (Reordered based on breakpoint for visual consistency with original) */}
+        <div className={`w-full ${isSm ? "flex flex-col order-1" : "xl:w-[20%] flex flex-col order-1 xl:order-2"} justify-center items-center gap-2 min-h-[200px] sm:min-h-[250px] xl:min-h-[400px]`}>
+          {isLgUp && (
+            <div className="flex gap-2 lg:gap-4 justify-center flex-wrap">
+              {[180, 120, 60].map(t => (
+                <Button key={t} className="text-xs lg:text-sm" isDisabled={match.ganador !== null || timer.temporizadorIniciado} size="sm" onPress={() => selectTime(t)}>
+                  {t === 180 ? "3:00" : t === 120 ? "2:00" : "1:00"}
+                </Button>
+              ))}
+            </div>
+          )}
+          {!isLgUp && (
+            <TimerControls
+              hasWinner={match.ganador !== null}
+              isRunning={timer.temporizadorIniciado}
+              selectedTime={timer.selectedTime}
+              onReset={resetTimer}
+              onSelectTime={selectTime}
+              onStart={startTimer}
+              onStop={stopTimer}
+            />
+          )}
+
+          <Temporizador
+            initialTime={timer.tiempoRestante}
+            isRunning={timer.temporizadorIniciado}
+            resetKey={resetKey}
+            onTimeEnd={handleTimeEnd}
+            onTimeUpdate={onTimeUpdate}
+          />
+
+          {isLgUp && (
+            <div className="flex gap-2 lg:gap-4 justify-center flex-wrap">
+              <Button className="text-xs lg:text-sm" isDisabled={match.ganador !== null || timer.temporizadorIniciado || timer.selectedTime === 0} size="sm" onPress={startTimer}>
+                {timer.temporizadorIniciado ? "Reanudar" : "Iniciar"}
+              </Button>
+              <Button className="text-xs lg:text-sm" isDisabled={match.ganador !== null || !timer.temporizadorIniciado} size="sm" onPress={stopTimer}>
+                Detener
+              </Button>
+              <Button className="text-xs lg:text-sm" isDisabled={match.ganador !== null || timer.temporizadorIniciado || timer.selectedTime === 0} size="sm" onPress={resetTimer}>
+                Reiniciar
+              </Button>
+            </div>
+          )}
+
+          {match.ganador && (
+            <Button className="text-xs sm:text-sm" color="success" size="sm" onPress={nextMatch}>
+              Siguiente Combate
+            </Button>
+          )}
+
+          <div className="flex flex-col gap-2">
+            <div className="flex gap-2 lg:gap-4 justify-center flex-wrap">
+              <Button className="text-xs" isDisabled={match.ganador !== null} size="sm" variant="light" onPress={sonarCampana}>
+                Campana 30 seg
+              </Button>
+              <Button size="sm" variant="light" onPress={resetAll} aria-label="Reiniciar Todo">
+                <MdLockReset className="text-lg sm:text-xl lg:text-2xl" />
+              </Button>
+              <Button className="text-xs" isDisabled={match.ganador !== null} size="sm" variant="light" onPress={sonarCampanaFinal}>
+                Campana fin del tiempo
+              </Button>
+            </div>
+            <audio ref={audioRef}><source src={Bell} type="audio/wav" /><track kind="captions" label="Español" src="" /></audio>
+            <audio ref={audioFinalRef}><source src={Bell3} type="audio/wav" /><track kind="captions" label="Español" src="" /></audio>
+          </div>
+        </div>
+        <div className="w-full xl:flex-1 order-3 xl:order-3">
+          <PanelCard
+            atenai={scores.shiro.atenai}
+            atenaiChui={scores.shiro.atenaiChui}
+            atenaiHansoku={scores.shiro.atenaiHansoku}
+            cinto="shiro"
+            disabled={match.ganador !== null}
+            imagen={ShiroBelt}
+            ippon={scores.shiro.ippon}
+            kiken={scores.shiro.kiken}
+            kinshi={scores.shiro.kinshi}
+            kinshiChui={scores.shiro.kinshiChui}
+            kinshiHansoku={scores.shiro.kinshiHansoku}
+            kinshiNi={scores.shiro.kinshiNi}
+            nombre={scores.shiro.nombre}
+            shikaku={scores.shiro.shikaku}
+            wazari={scores.shiro.wazari}
+            // Penalties
+            // Handlers
+            onAtenai={() => updateScore("shiro", "atenai")}
+            onAtenaiChui={() => updateScore("shiro", "atenaiChui")}
+            onAtenaiHansoku={() => updateScore("shiro", "atenaiHansoku")}
+            onHantei={() => setWinner("shiro")}
+            onIppon={() => updateScore("shiro", "ippon")}
+            onKiken={() => updateScore("shiro", "kiken")}
+            onKinshi={() => updateScore("shiro", "kinshi")}
+            onKinshiChui={() => updateScore("shiro", "kinshiChui")}
+            onKinshiHansoku={() => updateScore("shiro", "kinshiHansoku")}
+            onKinshiNi={() => updateScore("shiro", "kinshiNi")}
+            onShikaku={() => updateScore("shiro", "shikaku")}
+            onWazari={() => updateScore("shiro", "wazari")}
+          />
+        </div>
+      </div>
+
       <Ganador
-        ganador={state.match.ganador}
-        isOpen={state.match.showGanador}
-        nombreGanador={state.match.ganadorNombre}
-        onClose={() =>
-          dispatch({
-            type: "UPDATE_MATCH",
-            payload: { showGanador: false },
-          })
-        }
+        ganador={match.ganador}
+        isOpen={match.showGanador}
+        nombreGanador={match.ganadorNombre}
+        onClose={closeWinnerModal}
       />
-    </div>
+    </AnimatedPage>
+  );
+}
+
+export default function KumitePage() {
+  return (
+    <KumiteProvider>
+      <KumitePageContent />
+    </KumiteProvider>
   );
 }
